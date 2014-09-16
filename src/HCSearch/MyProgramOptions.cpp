@@ -72,6 +72,8 @@ namespace MyProgramOptions
 
 		maxCuttingThreshold = 1.0;
 		minCuttingThreshold = 0.0;
+
+		useAllUCMLevels = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -642,6 +644,15 @@ namespace MyProgramOptions
 						po.useEdgeWeights = false;
 				}
 			}
+			else if (strcmp(argv[i], "--all-cut-levels") == 0)
+			{
+				po.useAllUCMLevels = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.useAllUCMLevels = false;
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -685,6 +696,7 @@ namespace MyProgramOptions
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
+		cerr << "\t--all-cut-levels arg\t\t\t" << ": use all cut levels instead of stochastic or schedule" << endl;
 		cerr << "\t--anytime arg\t\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;

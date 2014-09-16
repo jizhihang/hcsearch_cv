@@ -88,11 +88,14 @@ namespace HCSearch
 		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
 		double maxThreshold; //!< max threshold for edge cutting
 		double minThreshold; //!< min threshold for edge cutting
+		bool useAllLevels; //!< use all cut levels instead of one particular threshold
 
 	public:
 		StochasticSuccessor();
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold, bool useAllLevels);
 		~StochasticSuccessor();
 
 		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
@@ -120,7 +123,9 @@ namespace HCSearch
 	public:
 		StochasticNeighborSuccessor();
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold, bool useAllLevels);
 		~StochasticNeighborSuccessor();
 
 	protected:
@@ -138,7 +143,9 @@ namespace HCSearch
 	public:
 		StochasticConfidencesNeighborSuccessor();
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold, bool useAllLevels);
 		~StochasticConfidencesNeighborSuccessor();
 
 	protected:

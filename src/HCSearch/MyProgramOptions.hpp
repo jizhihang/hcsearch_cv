@@ -96,6 +96,8 @@ namespace MyProgramOptions
 		double maxCuttingThreshold;
 		double minCuttingThreshold;
 
+		bool useAllUCMLevels;
+
 	public:
 		ProgramOptions();
 
