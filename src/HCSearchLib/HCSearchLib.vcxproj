@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BerkeleySegmentation.h" />
     <ClInclude Include="DataStructures.hpp" />
     <ClInclude Include="FeatureFunction.hpp" />
     <ClInclude Include="Globals.hpp" />
@@ -30,6 +31,7 @@
     <ClInclude Include="SuccessorFunction.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BerkeleySegmentation.cpp" />
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="FeatureFunction.cpp" />
     <ClCompile Include="Globals.cpp" />
