@@ -2045,9 +2045,14 @@ namespace HCSearch
 		return successors;
 	}
 
+	//void LearnedScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	//{
+	//	getAllLabels(candidateLabelsSet, cc);	
+	//}
+
 	void LearnedScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		getAllLabels(candidateLabelsSet, cc);	
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
 	void LearnedScheduleSuccessor::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
