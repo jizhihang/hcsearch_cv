@@ -3,6 +3,7 @@
 
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
+#include "BerkeleySegmentation.h"
 
 namespace HCSearch
 {
@@ -354,6 +355,11 @@ namespace HCSearch
 		double maxThreshold; //!< max threshold for edge cutting
 		double minThreshold; //!< min threshold for edge cutting
 
+		vector<double> currentAllWeights;
+		int currentWeightIndex;
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+		vector<double> edgeWeights;
+
 	public:
 		LearnedScheduleSuccessor();
 		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam);
@@ -373,6 +379,10 @@ namespace HCSearch
 		void getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 
 		static double computeKL(const VectorXd& p, const VectorXd& q);
+
+		vector<double> getAllUniqueUCMValues(vector<double> edgeWeights);
+		void getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
+			vector<double>& edgeWeights, map< int, set<int> >& edges, double T);
 	};
 }
 

@@ -1783,6 +1783,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = false;
 		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
 		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+
+		this->currentAllWeights = vector<double>();
+		this->currentWeightIndex = -1;
+		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
+		this->edgeWeights = vector<double>();
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam)
@@ -1791,6 +1796,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = cutEdgesIndependently;
 		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
 		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+
+		this->currentAllWeights = vector<double>();
+		this->currentWeightIndex = -1;
+		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
+		this->edgeWeights = vector<double>();
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels)
@@ -1799,6 +1809,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = cutEdgesIndependently;
 		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
 		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+
+		this->currentAllWeights = vector<double>();
+		this->currentWeightIndex = -1;
+		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
+		this->edgeWeights = vector<double>();
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
@@ -1807,6 +1822,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = cutEdgesIndependently;
 		this->maxThreshold = maxThreshold;
 		this->minThreshold = minThreshold;
+
+		this->currentAllWeights = vector<double>();
+		this->currentWeightIndex = -1;
+		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
+		this->edgeWeights = vector<double>();
 	}
 
 	LearnedScheduleSuccessor::~LearnedScheduleSuccessor()
@@ -1815,11 +1835,30 @@ namespace HCSearch
 	
 	vector< ImgCandidate > LearnedScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
+		// reset if beginning
+		if (timeStep == 0)
+		{
+			this->currentAllWeights.clear();
+			this->currentWeightIndex = -1;
+			this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
+			this->edgeWeights = vector<double>();
+
+			// get all unique UCM values
+			map< int, set<int> > edges = YPred.graph.adjList;
+			
+			getEdgeWeights(X, this->edgeNodes, this->edgeWeights, edges, this->cutParam);
+
+			this->currentAllWeights = getAllUniqueUCMValues(edgeWeights);
+			this->currentWeightIndex = currentAllWeights.size()-1; // TODO initialize somewhere else?
+		}
+
 		clock_t tic = clock();
 
-		// generate random threshold
-		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
-		threshold = threshold*(this->maxThreshold - this->minThreshold) + this->minThreshold;
+		// generate threshold
+		double threshold = this->currentAllWeights[this->currentWeightIndex];
+		threshold = max(threshold, this->minThreshold);
+		threshold = min(threshold, this->maxThreshold);
+		// TODO: schedule the threshold
 
 		if (!this->cutEdgesIndependently)
 			LOG() << "Cutting edges by state... Using threshold=" << threshold << endl;
@@ -1855,56 +1894,6 @@ namespace HCSearch
 
 		// store new cut edges
 		map< int, set<int> > cutEdges;
-
-		// convert to format storing (node1, node2) pairs
-		vector< MyPrimitives::Pair< int, int > > edgeNodes;
-
-		// edge weights using KL divergence measure
-		vector<double> edgeWeights;
-
-		// iterate over all edges to store
-		if (X.edgeWeightsAvailable)
-		{
-			for (map< MyPrimitives::Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
-			{
-				// get weights
-				double weight = it->second;
-				edgeWeights.push_back(weight);
-
-				// add
-				MyPrimitives::Pair<int, int> key = it->first;
-				edgeNodes.push_back(key);
-			}
-		}
-		else
-		{
-			LOG() << "Computing edge weights from nodes..." << endl;
-
-			for (map< int, set<int> >::iterator it = edges.begin();
-				it != edges.end(); ++it)
-			{
-				int node1 = it->first;
-				set<int> neighbors = it->second;
-		
-				// loop over neighbors
-				for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
-				{
-					int node2 = *it2;
-
-					// get features and labels
-					VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
-					VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
-
-					// compute weights already
-					double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
-					edgeWeights.push_back(weight);
-
-					// add
-					MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
-					edgeNodes.push_back(nodePair);
-				}
-			}
-		}
 
 		// given the edge weights, do the actual cutting!
 		const int numEdges = edgeNodes.size();
@@ -2119,5 +2108,68 @@ namespace HCSearch
 		}
 
 		return KL;
+	}
+
+	vector<double> LearnedScheduleSuccessor::getAllUniqueUCMValues(vector<double> edgeWeights)
+	{
+		const int numEdges = edgeWeights.size();
+		set<double> w;
+		for (int i = 0; i < numEdges; i++)
+		{
+			double weight = edgeWeights[i];
+			w.insert(weight);
+		}
+
+		vector<double> weightsList = vector<double>(w.begin(), w.end());
+		sort(weightsList.begin(), weightsList.end());
+
+		return weightsList;
+	}
+
+	void LearnedScheduleSuccessor::getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
+			vector<double>& edgeWeights, map< int, set<int> >& edges, double T)
+	{
+		if (X.edgeWeightsAvailable)
+		{
+			for (map< MyPrimitives::Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
+			{
+				// get weights
+				double weight = it->second;
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair<int, int> key = it->first;
+				edgeNodes.push_back(key);
+			}
+		}
+		else
+		{
+			LOG() << "Computing edge weights from nodes..." << endl;
+
+			for (map< int, set<int> >::iterator it = edges.begin();
+				it != edges.end(); ++it)
+			{
+				int node1 = it->first;
+				set<int> neighbors = it->second;
+		
+				// loop over neighbors
+				for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+				{
+					int node2 = *it2;
+
+					// get features and labels
+					VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+					VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+					// compute weights already
+					double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+					edgeWeights.push_back(weight);
+
+					// add
+					MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+					edgeNodes.push_back(nodePair);
+				}
+			}
+		}
 	}
 }
