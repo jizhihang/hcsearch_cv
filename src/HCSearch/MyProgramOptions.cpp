@@ -739,7 +739,7 @@ namespace MyProgramOptions
 		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
-			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained" << endl;
+			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained|learned-schedule" << endl;
 		cerr << "\t--temp-path arg\t" << ": temp folder name" << endl;
 		cerr << "\t--use-edge-weights arg\t\t" << ": use edge weights if true (must provide --edges-path)" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
