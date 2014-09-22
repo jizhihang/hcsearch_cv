@@ -335,6 +335,45 @@ namespace HCSearch
 		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
 			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes);
 	};
+
+	/*!
+	 * @brief Learned schedule successor function.
+	 * 
+	 * Learn to schedule. 
+	 * For each subgraph, flip its label to all possible classes.
+	 */
+	class LearnedScheduleSuccessor : public ISuccessorFunction
+	{
+	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
+		static const double DEFAULT_T_PARM;
+		static const double DEFAULT_MAX_THRESHOLD;
+		static const double DEFAULT_MIN_THRESHOLD;
+		double cutParam; //!< temperature parameter
+		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
+		double maxThreshold; //!< max threshold for edge cutting
+		double minThreshold; //!< min threshold for edge cutting
+
+	public:
+		LearnedScheduleSuccessor();
+		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam);
+		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
+		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		~LearnedScheduleSuccessor();
+
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+
+	protected:
+		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		void getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		static double computeKL(const VectorXd& p, const VectorXd& q);
+	};
 }
 
 #endif

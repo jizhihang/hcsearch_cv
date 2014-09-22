@@ -323,6 +323,8 @@ namespace MyProgramOptions
 						po.nodeClamp = true;
 						po.edgeClamp = true;
 					}
+					else if (strcmp(argv[i+1], "learned-schedule") == 0)
+						po.successorsMode = LEARNED_SCHEDULE;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
