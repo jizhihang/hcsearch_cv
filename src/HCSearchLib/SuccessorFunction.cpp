@@ -1859,6 +1859,9 @@ namespace HCSearch
 		threshold = max(threshold, this->minThreshold);
 		threshold = min(threshold, this->maxThreshold);
 		// TODO: schedule the threshold
+		if (this->currentWeightIndex-1 >= 0)
+			this->currentWeightIndex--;
+		// TODO ABOVE
 
 		if (!this->cutEdgesIndependently)
 			LOG() << "Cutting edges by state... Using threshold=" << threshold << endl;
