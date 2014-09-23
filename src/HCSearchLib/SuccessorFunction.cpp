@@ -2077,6 +2077,8 @@ namespace HCSearch
 			cumSumCC += ccset.size();
 			numSumCC++;
 
+			set<int> candidateLabelsSet;
+
 			// loop over each connected component
 			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
 			//if (!ccset.empty()) //EXPERIMENTAL: only choose one random connected component
@@ -2084,47 +2086,46 @@ namespace HCSearch
 				ConnectedComponent* cc = *it2;
 				//ConnectedComponent* cc = ccset[0]; //EXPERIMENTAL: only choose one random connected component
 
-				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
 				candidateLabelsSet.insert(nodeLabel);
 				
 				// get labels
 				getLabels(candidateLabelsSet, cc);
-				
+
 				candidateLabelsSet.erase(nodeLabel);
+			}
 
-				cumSumLabels += candidateLabelsSet.size();
-				numSumLabels++;
+			cumSumLabels += candidateLabelsSet.size();
+			numSumLabels++;
 
-				// loop over each candidate label
-				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+			// loop over each candidate label
+			for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+			{
+				int label = *it3;
+
+				// form successor object
+				ImgLabeling YNew;
+				YNew.confidences = YPred.confidences;
+				YNew.confidencesAvailable = YPred.confidencesAvailable;
+				YNew.stochasticCuts = subgraphs->getCuts();
+				YNew.stochasticCutsAvailable = true;
+				YNew.graph = YPred.graph;
+
+				// make changes
+				set<int> component = sub->getNodes();
+				set<int> action;
+				for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
 				{
-					int label = *it3;
-
-					// form successor object
-					ImgLabeling YNew;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = YPred.confidencesAvailable;
-					YNew.stochasticCuts = subgraphs->getCuts();
-					YNew.stochasticCutsAvailable = true;
-					YNew.graph = YPred.graph;
-
-					// make changes
-					set<int> component = cc->getNodes();
-					set<int> action;
-					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
-					{
-						int node = *it4;
-						YNew.graph.nodesData(node) = label;
-						action.insert(node);
-					}
-
-					ImgCandidate YCandidate;
-					YCandidate.labeling = YNew;
-					YCandidate.action = action;
-
-					successors.push_back(YCandidate);
+					int node = *it4;
+					YNew.graph.nodesData(node) = label;
+					action.insert(node);
 				}
+
+				ImgCandidate YCandidate;
+				YCandidate.labeling = YNew;
+				YCandidate.action = action;
+
+				successors.push_back(YCandidate);
 			}
 		}
 
