@@ -85,7 +85,7 @@ namespace HCSearch
 		return this->initialPredictionFunction->getInitialPrediction(X);
 	}
 
-	vector< ImgCandidate > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		if (this->successorFunction == NULL)
 		{
@@ -93,7 +93,7 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->successorFunction->generateSuccessors(X, YPred, timeStep, timeBound);
+		return this->successorFunction->generateSuccessors(X, YPred, YTruth, timeStep, timeBound);
 	}
 
 	vector< ImgCandidate > SearchSpace::pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)

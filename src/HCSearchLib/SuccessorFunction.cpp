@@ -19,7 +19,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -85,7 +85,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -164,7 +164,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -290,7 +290,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -754,7 +754,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -988,7 +988,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -1438,7 +1438,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		using namespace MyPrimitives;
 
@@ -1833,8 +1833,14 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > LearnedScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	vector< ImgCandidate > LearnedScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
+		if (YTruth == NULL)
+		{
+			LOG(ERROR) << "YTruth cannot be NULL for learned scheduling";
+			abort();
+		}
+
 		// reset if beginning
 		if (timeStep == 0)
 		{
@@ -1916,7 +1922,7 @@ namespace HCSearch
 			{
 				ImgCandidate candidate = *it;
 				ImgLabeling candLabeling = candidate.labeling;
-				double loss; //TODO compute loss
+				double loss = computePixelHammingLoss(candLabeling, *YTruth); //TODO compute loss
 
 				if (loss < bestActionLoss)
 				{

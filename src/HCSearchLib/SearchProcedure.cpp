@@ -1115,7 +1115,7 @@ namespace HCSearch
 		vector< SearchNode* > successors;
 
 		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, YTruth, timeStep, timeBound);
 
 		// prune successors
 		LOG() << "pruning successors..." << endl;
@@ -1145,7 +1145,7 @@ namespace HCSearch
 		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
 
 		// generate all successors before pruning
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, YTruth, timeStep, timeBound);
 
 		// set up pruning priority queue
 		const int numOriginalCandidates = YPredSet.size();
@@ -1313,7 +1313,7 @@ namespace HCSearch
 		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
 
 		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, YTruth, timeStep, timeBound);
 
 		// collect training examples
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
