@@ -1973,7 +1973,7 @@ namespace HCSearch
 			this->currentWeightIndex--;
 			action = "DOWN";
 		}
-		(*this->debugFile) << timeStep << ";" << this->currentWeightIndex << ";" << action << endl;
+		(*this->debugFile) << timeStep << ";" << this->currentAllWeights[this->currentWeightIndex] << ";" << this->currentWeightIndex << ";" << action << endl;
 
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
