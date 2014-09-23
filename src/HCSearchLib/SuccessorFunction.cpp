@@ -1876,7 +1876,7 @@ namespace HCSearch
 			getEdgeWeights(X, this->edgeNodes, this->edgeWeights, edges, this->cutParam);
 
 			this->currentAllWeights = getAllUniqueUCMValues(edgeWeights);
-			this->currentWeightIndex = currentAllWeights.size()-1; // TODO initialize somewhere else?
+			this->currentWeightIndex = currentAllWeights.size()/2; // TODO initialize somewhere else?
 		}
 
 		clock_t tic = clock();
