@@ -1877,6 +1877,16 @@ namespace HCSearch
 
 			this->currentAllWeights = getAllUniqueUCMValues(edgeWeights);
 			this->currentWeightIndex = currentAllWeights.size()/2; // TODO initialize somewhere else?
+
+			// save weights
+			stringstream fileBase2;
+			fileBase2 << "learnedstepsweights_" << this->counter << "";
+			stringstream fileName2;
+			fileName2 << Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_RESULTS_DIR, fileBase2.str(), Global::settings->RANK);
+			ofstream fh2(fileName2.str().c_str());
+			for (vector<double>::iterator itt = this->currentAllWeights.begin(); itt != this->currentAllWeights.end(); itt++)
+				fh2 << *itt << endl;
+			fh2.close();
 		}
 
 		clock_t tic = clock();
