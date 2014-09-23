@@ -1788,6 +1788,8 @@ namespace HCSearch
 		this->currentWeightIndex = -1;
 		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
 		this->edgeWeights = vector<double>();
+		this->debugFile = NULL;
+		this->counter = 0;
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam)
@@ -1801,6 +1803,8 @@ namespace HCSearch
 		this->currentWeightIndex = -1;
 		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
 		this->edgeWeights = vector<double>();
+		this->debugFile = NULL;
+		this->counter = 0;
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels)
@@ -1814,6 +1818,8 @@ namespace HCSearch
 		this->currentWeightIndex = -1;
 		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
 		this->edgeWeights = vector<double>();
+		this->debugFile = NULL;
+		this->counter = 0;
 	}
 
 	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
@@ -1827,6 +1833,8 @@ namespace HCSearch
 		this->currentWeightIndex = -1;
 		this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();
 		this->edgeWeights = vector<double>();
+		this->debugFile = NULL;
+		this->counter = 0;
 	}
 
 	LearnedScheduleSuccessor::~LearnedScheduleSuccessor()
@@ -1844,6 +1852,19 @@ namespace HCSearch
 		// reset if beginning
 		if (timeStep == 0)
 		{
+			counter++;
+			if (debugFile != NULL)
+			{
+				this->debugFile->close();
+				delete this->debugFile;
+				debugFile = NULL;
+			}
+			stringstream fileBase;
+			fileBase << "learnedsteps_" << this->counter << "";
+			stringstream fileName;
+			fileName << Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_RESULTS_DIR, fileBase.str(), Global::settings->RANK);
+			this->debugFile = new ofstream(fileName.str().c_str());
+
 			this->currentAllWeights.clear();
 			this->currentWeightIndex = -1;
 			this->edgeNodes = vector< MyPrimitives::Pair< int, int > >();

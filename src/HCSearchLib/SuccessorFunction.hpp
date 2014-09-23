@@ -359,6 +359,8 @@ namespace HCSearch
 		int currentWeightIndex;
 		vector< MyPrimitives::Pair< int, int > > edgeNodes;
 		vector<double> edgeWeights;
+		ofstream* debugFile;
+		int counter;
 
 	public:
 		LearnedScheduleSuccessor();
