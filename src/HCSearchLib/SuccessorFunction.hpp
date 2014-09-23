@@ -383,6 +383,8 @@ namespace HCSearch
 		vector<double> getAllUniqueUCMValues(vector<double> edgeWeights);
 		void getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
 			vector<double>& edgeWeights, map< int, set<int> >& edges, double T);
+
+		double computePixelHammingLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 	};
 }
 

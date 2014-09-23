@@ -1858,31 +1858,91 @@ namespace HCSearch
 		double threshold = this->currentAllWeights[this->currentWeightIndex];
 		threshold = max(threshold, this->minThreshold);
 		threshold = min(threshold, this->maxThreshold);
-		// TODO: schedule the threshold
-		if (this->currentWeightIndex-1 >= 0)
-			this->currentWeightIndex--;
-		// TODO ABOVE
-
-		if (!this->cutEdgesIndependently)
-			LOG() << "Cutting edges by state... Using threshold=" << threshold << endl;
-		else
-			LOG() << "Cutting edges independently..." << endl;
 
 		vector< ImgCandidate > successors;
 
-		// perform cut
-		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+		int bestAction = 0;
+		ImgCandidate bestCandidate;
+		double bestLoss = 1.0;
+		for (int i = 0; i < 3; i++)
+		{
+			successors.clear();
 
-		LOG() << "generating stochastic successors..." << endl;
+			if (!this->cutEdgesIndependently)
+				LOG() << i << ") Cutting edges by state... Using threshold=" << threshold << endl;
+			else
+				LOG() << i << ") Cutting edges independently..." << endl;
 
-		// generate candidates
-		successors = createCandidates(YPred, subgraphs);
+			// i = 0: stay, i = 1: up, i = 2: down
+			double newThreshold = threshold;
+			if (i == 1)
+			{
+				const int numWeights = currentAllWeights.size();
+				if (this->currentWeightIndex+1 >= numWeights)
+					continue;
 
-		LOG() << "num successors generated=" << successors.size() << endl;
+				newThreshold = this->currentAllWeights[this->currentWeightIndex+1];
+				newThreshold = max(newThreshold, this->minThreshold);
+				newThreshold = min(newThreshold, this->maxThreshold);
+			}
+			else if (i == 2)
+			{
+				if (this->currentWeightIndex-1 < 0)
+					continue;
 
-		Global::settings->stats->addSuccessorCount(successors.size());
+				newThreshold = this->currentAllWeights[this->currentWeightIndex-1];
+				newThreshold = max(newThreshold, this->minThreshold);
+				newThreshold = min(newThreshold, this->maxThreshold);
+			}
 
-		delete subgraphs;
+			// perform cut
+			MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, newThreshold, this->cutParam);
+
+			LOG() << "generating stochastic successors..." << endl;
+
+			// generate candidates
+			successors = createCandidates(YPred, subgraphs);
+
+			LOG() << "num successors generated=" << successors.size() << endl;
+
+			//Global::settings->stats->addSuccessorCount(successors.size());
+
+			delete subgraphs;
+
+			// get the best one
+			ImgCandidate bestActionCandidate;
+			double bestActionLoss = 1.0;
+			for (vector< ImgCandidate >::iterator it = successors.begin(); it != successors.end(); it++)
+			{
+				ImgCandidate candidate = *it;
+				ImgLabeling candLabeling = candidate.labeling;
+				double loss; //TODO compute loss
+
+				if (loss < bestActionLoss)
+				{
+					bestActionCandidate = candidate;
+					bestActionLoss = loss;
+				}
+			}
+
+			if (bestActionLoss < bestLoss)
+			{
+				bestCandidate = bestActionCandidate;
+				bestLoss = bestActionLoss;
+				bestAction = i;
+			}
+		}
+
+		// get the best action, record action and keep as only successor
+		successors.push_back(bestCandidate);
+		if (bestAction == 1)
+		{
+			this->currentWeightIndex++;
+		}
+		else if (bestAction == 2)
+		{
+			this->currentWeightIndex--;
+		}
 
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
@@ -2179,5 +2239,25 @@ namespace HCSearch
 				}
 			}
 		}
+	}
+
+	double LearnedScheduleSuccessor::computePixelHammingLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
+	{
+		if (!YTruth.nodeWeightsAvailable)
+		{
+			LOG(WARNING) << "node weights are not available for computing pixel hamming loss.";
+		}
+
+		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.array() != YTruth.graph.nodesData.array();
+		double loss = 0.0;
+		for (int i = 0; i < diff.size(); i++)
+		{
+			if (diff(i))
+				if (YTruth.nodeWeightsAvailable)
+					loss += YTruth.nodeWeights(i);
+				else
+					loss += 1.0/diff.size();
+		}
+		return loss;
 	}
 }
