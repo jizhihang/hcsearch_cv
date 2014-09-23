@@ -1962,14 +1962,18 @@ namespace HCSearch
 
 		// get the best action, record action and keep as only successor
 		successors.push_back(bestCandidate);
+		string action = "STAY";
 		if (bestAction == 1)
 		{
 			this->currentWeightIndex++;
+			action = "UP";
 		}
 		else if (bestAction == 2)
 		{
 			this->currentWeightIndex--;
+			action = "DOWN";
 		}
+		(*this->debugFile) << timeStep << ";" << this->currentWeightIndex << ";" << action << endl;
 
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
