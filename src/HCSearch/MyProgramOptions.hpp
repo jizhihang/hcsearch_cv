@@ -31,6 +31,7 @@ namespace MyProgramOptions
 
 		// input and output directories
 
+		string baseDir;
 		string inputDir;
 		string outputDir;
 		string splitsFolderName;
