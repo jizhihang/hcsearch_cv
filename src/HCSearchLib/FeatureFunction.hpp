@@ -407,7 +407,7 @@ namespace HCSearch
 		 * @brief Compute pairwise features.
 		 */
 		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
-			int nodeLabel1, int nodeLabel2, int& classIndex);
+			int nodeLabel1, int nodeLabel2);
 	};
 }
 
