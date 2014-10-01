@@ -1794,6 +1794,8 @@ namespace HCSearch
 	vector< ImgCandidate > OracleScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
+		const double BEST_LOSS_INIT_VALUE = 100000;
+
 		if (YTruth == NULL)
 		{
 			LOG(ERROR) << "YTruth cannot be NULL for learned scheduling";
@@ -1820,7 +1822,7 @@ namespace HCSearch
 		}
 
 		// get candidates - up, down, stay
-		double bestLoss = 100000;
+		double bestLoss = BEST_LOSS_INIT_VALUE;
 		int bestAction = -1;
 		BSTNode* bestRegion = NULL;
 		ImgCandidate bestCandidate;
@@ -1883,9 +1885,12 @@ namespace HCSearch
 
 				LOG(DEBUG) << "region=" << region->nodeID << ", action=" << i << ", num cand=" << candidateSet.size();
 
+				if (candidateSet.empty())
+					continue;
+
 				// get the best one
 				ImgCandidate bestActionCandidate;
-				double bestActionLoss = 1.0;
+				double bestActionLoss = BEST_LOSS_INIT_VALUE;
 				for (vector< ImgCandidate >::iterator it = candidateSet.begin(); it != candidateSet.end(); it++)
 				{
 					ImgCandidate candidate = *it;
