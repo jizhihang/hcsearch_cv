@@ -1840,6 +1840,7 @@ namespace HCSearch
 				{
 					// propose candidates by coloring new regions
 					vector< ImgCandidate > candSet = createCandidates(YPred, region);
+					LOG(DEBUG) << "stay cand size=" << candSet.size();
 					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
 				}
 				if (i == 1)
@@ -1852,8 +1853,10 @@ namespace HCSearch
 
 					// propose candidates by coloring new regions
 					vector< ImgCandidate > candSet1 = createCandidates(YPred, region->childL);
+					LOG(DEBUG) << "split 1 cand size=" << candSet1.size();
 					candidateSet.insert(candidateSet.end(), candSet1.begin(), candSet1.end());
 					vector< ImgCandidate > candSet2 = createCandidates(YPred, region->childR);
+					LOG(DEBUG) << "split 2 cand size=" << candSet2.size();
 					candidateSet.insert(candidateSet.end(), candSet2.begin(), candSet2.end());
 
 					// undo split
@@ -1877,6 +1880,7 @@ namespace HCSearch
 
 					// propose candidates by coloring new regions
 					vector< ImgCandidate > candSet = createCandidates(YPred, region->parent);
+					LOG(DEBUG) << "merge cand size=" << candSet.size();
 					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
 
 					// undo merge
