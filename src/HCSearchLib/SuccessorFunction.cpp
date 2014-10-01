@@ -1820,7 +1820,7 @@ namespace HCSearch
 		}
 
 		// get candidates - up, down, stay
-		double bestLoss = 1.0;
+		double bestLoss = 100000;
 		int bestAction = -1;
 		BSTNode* bestRegion = NULL;
 		ImgCandidate bestCandidate;
@@ -1881,6 +1881,8 @@ namespace HCSearch
 					this->bst->splitRegion(region->parent);
 				}
 
+				LOG(DEBUG) << "region=" << region->nodeID << ", action=" << i << ", num cand=" << candidateSet.size();
+
 				// get the best one
 				ImgCandidate bestActionCandidate;
 				double bestActionLoss = 1.0;
@@ -1906,6 +1908,12 @@ namespace HCSearch
 					bestRegion = region;
 				}
 			}
+		}
+
+		if (bestAction == -1)
+		{
+			LOG(ERROR) << "there was no best action recorded.";
+			abort();
 		}
 
 		// keep only best candidate
