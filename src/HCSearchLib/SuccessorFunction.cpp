@@ -1984,7 +1984,7 @@ namespace HCSearch
 		{
 			Node_t node = *it;
 			set<int> labels = YPred.getTopConfidentLabels(node, topKConfidences);
-			superpixels.insert(labels.begin(), labels.end());
+			candidateLabelsSet.insert(labels.begin(), labels.end());
 		}
 		LOG(DEBUG) << "num label proposals=" << candidateLabelsSet.size();
 
