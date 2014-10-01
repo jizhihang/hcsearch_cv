@@ -32,8 +32,14 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
-	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
+Debug: create_folders gccDebug/BerkeleySegmentation.o gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
+	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/BerkeleySegmentation.o gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
+
+# Compiles file BerkeleySegmentation.cpp for the Debug configuration...
+-include gccDebug/BerkeleySegmentation.d
+gccDebug/BerkeleySegmentation.o: BerkeleySegmentation.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c BerkeleySegmentation.cpp $(Debug_Include_Path) -o gccDebug/BerkeleySegmentation.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM BerkeleySegmentation.cpp $(Debug_Include_Path) > gccDebug/BerkeleySegmentation.d
 
 # Compiles file DataStructures.cpp for the Debug configuration...
 -include gccDebug/DataStructures.d
@@ -133,8 +139,14 @@ gccDebug/SuccessorFunction.o: SuccessorFunction.cpp
 
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
-	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
+Release: create_folders gccRelease/BerkeleySegmentation.o gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
+	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/BerkeleySegmentation.o gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
+
+# Compiles file BerkeleySegmentation.cpp for the Release configuration...
+-include gccRelease/BerkeleySegmentation.d
+gccRelease/BerkeleySegmentation.o: BerkeleySegmentation.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c BerkeleySegmentation.cpp $(Release_Include_Path) -o gccRelease/BerkeleySegmentation.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM BerkeleySegmentation.cpp $(Release_Include_Path) > gccRelease/BerkeleySegmentation.d
 
 # Compiles file DataStructures.cpp for the Release configuration...
 -include gccRelease/DataStructures.d
