@@ -1781,7 +1781,7 @@ namespace HCSearch
 
 	OracleScheduleSuccessor::OracleScheduleSuccessor()
 	{
-		//TODO
+		this->bst = NULL;
 	}
 
 	OracleScheduleSuccessor::~OracleScheduleSuccessor()
@@ -1791,7 +1791,152 @@ namespace HCSearch
 	vector< ImgCandidate > OracleScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
-		return vector< ImgCandidate >();//TODO
+		if (YTruth == NULL)
+		{
+			LOG(ERROR) << "YTruth cannot be NULL for learned scheduling";
+			abort();
+		}
+
+		clock_t tic = clock();
+
+		vector< ImgCandidate > successors;
+
+		// construct tree if initial time step
+		if (timeStep == 0)
+		{
+			if (this->bst != NULL)
+			{
+				delete this->bst;
+				this->bst = NULL;
+			}
+
+			map< Edge_t, double > edgeWeights;
+			getEdgeWeights(X, edgeWeights);
+
+			this->bst = new BerkeleySegmentationTree(*YTruth, edgeWeights);
+		}
+
+		// get candidates - up, down, stay
+		double bestLoss = 1.0;
+		int bestAction = -1;
+		BSTNode* bestRegion = NULL;
+		ImgCandidate bestCandidate;
+		for (int i = 0; i < 3; i++)
+		{
+			set<BSTNode*> currentPartition = this->bst->getCurrentPartition();
+			for (set<BSTNode*>::iterator it = currentPartition.begin(); it != currentPartition.end(); it++)
+			{
+				BSTNode* region = *it;
+
+				// perform action on region
+				if (i == 1)
+				{
+					if (region->isLeafNode())
+						continue;
+
+					// split
+					this->bst->splitRegion(region);
+				}
+				else if (i == 2)
+				{
+					if (region->isRootNode())
+						continue;
+
+					// merge
+					this->bst->mergeRegion(region);
+				}
+
+				// propose candidates by coloring new regions
+				vector< ImgCandidate > candidateSet; //TODO
+
+				// undo action
+				if (i == 1)
+				{
+					// undo split
+					if (region->childL != NULL)
+						this->bst->mergeRegion(region->childL);
+					else if (region->childR != NULL)
+						this->bst->mergeRegion(region->childR);
+					else
+					{
+						LOG(ERROR) << "child null, impossible case";
+						abort();
+					}
+				}
+				else if (i == 2)
+				{
+					// undo merge
+					this->bst->splitRegion(region->parent);
+				}
+
+				// get the best one
+				ImgCandidate bestActionCandidate;
+				double bestActionLoss = 1.0;
+				for (vector< ImgCandidate >::iterator it = candidateSet.begin(); it != candidateSet.end(); it++)
+				{
+					ImgCandidate candidate = *it;
+					ImgLabeling candLabeling = candidate.labeling;
+					double loss = lossFunc->computeLoss(candLabeling, *YTruth);
+
+					if (loss < bestActionLoss)
+					{
+						bestActionCandidate = candidate;
+						bestActionLoss = loss;
+					}
+				}
+
+				// update best
+				if (bestActionLoss < bestLoss)
+				{
+					bestCandidate = bestActionCandidate;
+					bestLoss = bestActionLoss;
+					bestAction = i;
+					bestRegion = region;
+				}
+			}
+		}
+
+		// keep only best candidate
+		successors.push_back(bestCandidate);
+
+		// keep best action on region
+		if (bestAction == 1)
+		{
+			// split
+			this->bst->splitRegion(bestRegion);
+		}
+		else if (bestAction == 2)
+		{
+			// merge
+			this->bst->mergeRegion(bestRegion);
+		}
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	void OracleScheduleSuccessor::getEdgeWeights(ImgFeatures& X, map< Edge_t, double > edgeWeights)
+	{
+		if (X.edgeWeightsAvailable)
+		{
+			for (map< MyPrimitives::Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
+			{
+				double weight = it->second;
+				MyPrimitives::Pair<int, int> key = it->first;
+
+				if (edgeWeights.count(key) != 0)
+					LOG(WARNING) << "key already found";
+
+				edgeWeights[key] = weight;
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "Edge weights not found";
+			abort();
+		}
 	}
 
 	/**************** Learned Schedule Successor Function ****************/

@@ -353,12 +353,18 @@ namespace HCSearch
 	 */
 	class OracleScheduleSuccessor : public ISuccessorFunction
 	{
+	private:
+		BerkeleySegmentationTree* bst;
+
 	public:
 		OracleScheduleSuccessor();
 		~OracleScheduleSuccessor();
 
 		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
+
+	protected:
+		void getEdgeWeights(ImgFeatures& X, map< Edge_t, double > edgeWeights);
 	};
 
 	/*!
