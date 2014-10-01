@@ -1777,7 +1777,9 @@ namespace HCSearch
 		return closure;
 	}
 
-	/**************** Learned Schedule Successor Function ****************/
+	/**************** Oracle Schedule Successor Function ****************/
+
+	const double OracleScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 
 	OracleScheduleSuccessor::OracleScheduleSuccessor()
 	{
@@ -1828,7 +1830,15 @@ namespace HCSearch
 			{
 				BSTNode* region = *it;
 
+				vector< ImgCandidate > candidateSet;
+
 				// perform action on region
+				if (i == 0)
+				{
+					// propose candidates by coloring new regions
+					vector< ImgCandidate > candSet = createCandidates(YPred, region);
+					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
+				}
 				if (i == 1)
 				{
 					if (region->isLeafNode())
@@ -1836,22 +1846,13 @@ namespace HCSearch
 
 					// split
 					this->bst->splitRegion(region);
-				}
-				else if (i == 2)
-				{
-					if (region->isRootNode())
-						continue;
 
-					// merge
-					this->bst->mergeRegion(region);
-				}
+					// propose candidates by coloring new regions
+					vector< ImgCandidate > candSet1 = createCandidates(YPred, region->childL);
+					candidateSet.insert(candidateSet.end(), candSet1.begin(), candSet1.end());
+					vector< ImgCandidate > candSet2 = createCandidates(YPred, region->childR);
+					candidateSet.insert(candidateSet.end(), candSet2.begin(), candSet2.end());
 
-				// propose candidates by coloring new regions
-				vector< ImgCandidate > candidateSet; //TODO
-
-				// undo action
-				if (i == 1)
-				{
 					// undo split
 					if (region->childL != NULL)
 						this->bst->mergeRegion(region->childL);
@@ -1865,6 +1866,16 @@ namespace HCSearch
 				}
 				else if (i == 2)
 				{
+					if (region->isRootNode())
+						continue;
+
+					// merge
+					this->bst->mergeRegion(region);
+
+					// propose candidates by coloring new regions
+					vector< ImgCandidate > candSet = createCandidates(YPred, region->parent);
+					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
+
 					// undo merge
 					this->bst->splitRegion(region->parent);
 				}
@@ -1939,7 +1950,54 @@ namespace HCSearch
 		}
 	}
 
-	/**************** Learned Schedule Successor Function ****************/
+	vector< ImgCandidate > OracleScheduleSuccessor::createCandidates(ImgLabeling& YPred, BSTNode* region)
+	{
+		int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+
+		vector<ImgCandidate> successors;
+
+		set<Node_t> superpixels = region->getAllDescendentSuperpixels();
+
+		// get label set
+		set<int> candidateLabelsSet;
+		for (set<Node_t>::iterator it = superpixels.begin(); it != superpixels.end(); it++)
+		{
+			Node_t node = *it;
+			set<int> labels = YPred.getTopConfidentLabels(node, topKConfidences);
+			superpixels.insert(labels.begin(), labels.end());
+		}
+
+		// for each possible label, recolor region
+		for (set<int>::iterator it = candidateLabelsSet.begin(); it != candidateLabelsSet.end(); it++)
+		{
+			int label = *it;
+
+			// form successor object
+			ImgLabeling YNew;
+			YNew.confidences = YPred.confidences;
+			YNew.confidencesAvailable = YPred.confidencesAvailable;
+			YNew.stochasticCutsAvailable = false; // TODO
+			YNew.graph = YPred.graph;
+
+			set<Node_t> action;
+			for (set<Node_t>::iterator it2 = superpixels.begin(); it2 != superpixels.end(); it2++)
+			{
+				int node = *it2;
+				YNew.graph.nodesData(node) = label;
+				action.insert(node);
+			}
+
+			ImgCandidate YCandidate;
+			YCandidate.labeling = YNew;
+			YCandidate.action = action;
+
+			successors.push_back(YCandidate);
+		}
+
+		return successors;
+	}
+
+	/**************** Oracle Schedule Global Cuts Version Successor Function ****************/
 
 	const double OracleScheduleSuccessorGlobalCuts::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double OracleScheduleSuccessorGlobalCuts::DEFAULT_T_PARM = 0.5;

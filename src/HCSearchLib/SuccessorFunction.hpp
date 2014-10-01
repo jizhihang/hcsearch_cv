@@ -354,6 +354,7 @@ namespace HCSearch
 	class OracleScheduleSuccessor : public ISuccessorFunction
 	{
 	private:
+		static const double TOP_CONFIDENCES_PROPORTION;
 		BerkeleySegmentationTree* bst;
 
 	public:
@@ -365,6 +366,8 @@ namespace HCSearch
 
 	protected:
 		void getEdgeWeights(ImgFeatures& X, map< Edge_t, double > edgeWeights);
+
+		vector< ImgCandidate > createCandidates(ImgLabeling& YPred, BSTNode* region);
 	};
 
 	/*!
