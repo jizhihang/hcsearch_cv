@@ -1924,6 +1924,9 @@ namespace HCSearch
 			LOG(ERROR) << "there was no best action recorded.";
 			abort();
 		}
+		LOG(DEBUG) << "BEST ACTION=" << bestAction;
+		LOG(DEBUG) << "BEST LOSS=" << bestLoss;
+		LOG(DEBUG) << "BEST REGION=" << bestRegion;
 
 		// keep only best candidate
 		successors.push_back(bestCandidate);
