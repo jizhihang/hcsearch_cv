@@ -365,7 +365,7 @@ namespace HCSearch
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
-		void getEdgeWeights(ImgFeatures& X, map< Edge_t, double > edgeWeights);
+		void getEdgeWeights(ImgFeatures& X, map< Edge_t, double >& edgeWeights);
 
 		vector< ImgCandidate > createCandidates(ImgLabeling& YPred, BSTNode* region);
 	};

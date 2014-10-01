@@ -1929,7 +1929,7 @@ namespace HCSearch
 		return successors;
 	}
 
-	void OracleScheduleSuccessor::getEdgeWeights(ImgFeatures& X, map< Edge_t, double > edgeWeights)
+	void OracleScheduleSuccessor::getEdgeWeights(ImgFeatures& X, map< Edge_t, double >& edgeWeights)
 	{
 		if (X.edgeWeightsAvailable)
 		{
