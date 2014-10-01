@@ -263,8 +263,6 @@ namespace HCSearch
 		VectorXi nodeIDs = VectorXi::Zero(graph.getNumNodes()); // for keeping track of new IDs for intermediate nodes
 		int idCounter = 0; // for creating new IDs for intermediate nodes
 
-		LOG(DEBUG) << "num nodes: " << graph.getNumNodes();
-
 		// construct BSTNodes for all superpixels
 		vector<BSTNode*> BSTNodeList; // for keeping track of nodes
 		for (int nodeID = 0; nodeID < graph.getNumNodes(); nodeID++)
@@ -294,8 +292,6 @@ namespace HCSearch
 			}
 			set<Edge_t> edgeSet = edgesOrdered[threshold];
 
-			LOG(DEBUG) << "threshold=" << threshold;
-
 			// repeat until cannot select any more contours:
 			// select contour of weight equal to the threshold
 			// create intermediate node that links the two regions
@@ -304,8 +300,6 @@ namespace HCSearch
 				Edge_t edge = *it2;
 				Node_t node1 = edge.first;
 				Node_t node2 = edge.second;
-
-				LOG(DEBUG) << "edge=" << node1 << "," << node2;
 
 				if (ds.FindSet(node1) == ds.FindSet(node2))
 				{
@@ -349,8 +343,6 @@ namespace HCSearch
 				Node_t node1Top = nodeIDs(node1);
 				Node_t node2Top = nodeIDs(node2);
 
-				LOG(DEBUG) << "node1Top=" << node1Top << ", node2Top=" << node2Top;
-
 				// TODO: more efficient way to update...
 				for (int i = 0; i < graph.getNumNodes(); i++)
 				{
@@ -370,10 +362,6 @@ namespace HCSearch
 		// SANITY CHECKS BEFORE FINISHING
 
 		int checkAllSameID = nodeIDs[0];
-		for (int i = 0; i < nodeIDs.size(); i++)//DEBUG
-		{
-			LOG(DEBUG) << "nodeID " << i << ": " << nodeIDs[i];
-		}
 		for (int i = 1; i < nodeIDs.size(); i++)
 		{
 			if (nodeIDs[i] != checkAllSameID)
