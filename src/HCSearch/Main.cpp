@@ -331,13 +331,13 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		successor = new HCSearch::StochasticConstrainedSuccessor(cutEdgesIndependently, po.cutParam, 
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
-	case MyProgramOptions::ProgramOptions::LEARNED_SCHEDULE:
-		LOG() << "learned schedule" << endl;
-		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
-		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
-		LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
-		successor = new HCSearch::LearnedScheduleSuccessor(cutEdgesIndependently, po.cutParam, po.maxCuttingThreshold, po.minCuttingThreshold);
+	case MyProgramOptions::ProgramOptions::ORACLE_SCHEDULE:
+		LOG() << "oracle schedule" << endl;
+		//LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		//LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		//LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
+		//LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
+		successor = new HCSearch::OracleScheduleSuccessor();
 		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";

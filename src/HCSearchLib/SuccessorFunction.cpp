@@ -19,7 +19,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -85,7 +86,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -164,7 +166,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -290,7 +293,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -754,7 +758,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -988,7 +993,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -1438,7 +1444,8 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		using namespace MyPrimitives;
 
@@ -1772,12 +1779,29 @@ namespace HCSearch
 
 	/**************** Learned Schedule Successor Function ****************/
 
-	const double LearnedScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
-	const double LearnedScheduleSuccessor::DEFAULT_T_PARM = 0.5;
-	const double LearnedScheduleSuccessor::DEFAULT_MAX_THRESHOLD = 1.0;
-	const double LearnedScheduleSuccessor::DEFAULT_MIN_THRESHOLD = 0.0;
+	OracleScheduleSuccessor::OracleScheduleSuccessor()
+	{
+		//TODO
+	}
 
-	LearnedScheduleSuccessor::LearnedScheduleSuccessor()
+	OracleScheduleSuccessor::~OracleScheduleSuccessor()
+	{
+	}
+
+	vector< ImgCandidate > OracleScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
+	{
+		return vector< ImgCandidate >();//TODO
+	}
+
+	/**************** Learned Schedule Successor Function ****************/
+
+	const double OracleScheduleSuccessorGlobalCuts::TOP_CONFIDENCES_PROPORTION = 0.5;
+	const double OracleScheduleSuccessorGlobalCuts::DEFAULT_T_PARM = 0.5;
+	const double OracleScheduleSuccessorGlobalCuts::DEFAULT_MAX_THRESHOLD = 1.0;
+	const double OracleScheduleSuccessorGlobalCuts::DEFAULT_MIN_THRESHOLD = 0.0;
+
+	OracleScheduleSuccessorGlobalCuts::OracleScheduleSuccessorGlobalCuts()
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = false;
@@ -1792,7 +1816,7 @@ namespace HCSearch
 		this->counter = 0;
 	}
 
-	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam)
+	OracleScheduleSuccessorGlobalCuts::OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
@@ -1807,7 +1831,7 @@ namespace HCSearch
 		this->counter = 0;
 	}
 
-	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels)
+	OracleScheduleSuccessorGlobalCuts::OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam, bool useAllLevels)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
@@ -1822,7 +1846,7 @@ namespace HCSearch
 		this->counter = 0;
 	}
 
-	LearnedScheduleSuccessor::LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	OracleScheduleSuccessorGlobalCuts::OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
@@ -1837,11 +1861,12 @@ namespace HCSearch
 		this->counter = 0;
 	}
 
-	LearnedScheduleSuccessor::~LearnedScheduleSuccessor()
+	OracleScheduleSuccessorGlobalCuts::~OracleScheduleSuccessorGlobalCuts()
 	{
 	}
 	
-	vector< ImgCandidate > LearnedScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)
+	vector< ImgCandidate > OracleScheduleSuccessorGlobalCuts::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		if (YTruth == NULL)
 		{
@@ -1953,7 +1978,7 @@ namespace HCSearch
 			{
 				ImgCandidate candidate = *it;
 				ImgLabeling candLabeling = candidate.labeling;
-				double loss = computePixelHammingLoss(candLabeling, *YTruth); //TODO compute loss
+				double loss = lossFunc->computeLoss(candLabeling, *YTruth);
 
 				if (loss < bestActionLoss)
 				{
@@ -1991,7 +2016,7 @@ namespace HCSearch
 		return successors;
 	}
 
-	MyGraphAlgorithms::SubgraphSet* LearnedScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	MyGraphAlgorithms::SubgraphSet* OracleScheduleSuccessorGlobalCuts::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
 	{
 		const int numNodes = X.getNumNodes();
 		map< int, set<int> > edges = YPred.graph.adjList;
@@ -2057,7 +2082,7 @@ namespace HCSearch
 		return subgraphs;
 	}
 
-	vector< ImgCandidate > LearnedScheduleSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	vector< ImgCandidate > OracleScheduleSuccessorGlobalCuts::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
 	{
 		using namespace MyGraphAlgorithms;
 
@@ -2147,23 +2172,23 @@ namespace HCSearch
 		return successors;
 	}
 
-	//void LearnedScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	//void OracleScheduleSuccessorGlobalCuts::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	//{
 	//	getAllLabels(candidateLabelsSet, cc);	
 	//}
 
-	void LearnedScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	void OracleScheduleSuccessorGlobalCuts::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
 		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
-	void LearnedScheduleSuccessor::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	void OracleScheduleSuccessorGlobalCuts::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
 		// flip to any possible class
 		candidateLabelsSet = Global::settings->CLASSES.getLabels();
 	}
 
-	void LearnedScheduleSuccessor::getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	void OracleScheduleSuccessorGlobalCuts::getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
 		if (cc->hasNeighbors())
 		{
@@ -2178,7 +2203,7 @@ namespace HCSearch
 		}
 	}
 
-	void LearnedScheduleSuccessor::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	void OracleScheduleSuccessorGlobalCuts::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
 		int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
 		candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
@@ -2190,7 +2215,7 @@ namespace HCSearch
 		}
 	}
 
-	double LearnedScheduleSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
+	double OracleScheduleSuccessorGlobalCuts::computeKL(const VectorXd& p, const VectorXd& q)
 	{
 		if (p.size() != q.size())
 		{
@@ -2220,7 +2245,7 @@ namespace HCSearch
 		return KL;
 	}
 
-	vector<double> LearnedScheduleSuccessor::getAllUniqueUCMValues(vector<double> edgeWeights)
+	vector<double> OracleScheduleSuccessorGlobalCuts::getAllUniqueUCMValues(vector<double> edgeWeights)
 	{
 		const int numEdges = edgeWeights.size();
 		set<double> w;
@@ -2236,7 +2261,7 @@ namespace HCSearch
 		return weightsList;
 	}
 
-	void LearnedScheduleSuccessor::getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
+	void OracleScheduleSuccessorGlobalCuts::getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
 			vector<double>& edgeWeights, map< int, set<int> >& edges, double T)
 	{
 		if (X.edgeWeightsAvailable)
@@ -2281,25 +2306,5 @@ namespace HCSearch
 				}
 			}
 		}
-	}
-
-	double LearnedScheduleSuccessor::computePixelHammingLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
-	{
-		if (!YTruth.nodeWeightsAvailable)
-		{
-			LOG(WARNING) << "node weights are not available for computing pixel hamming loss.";
-		}
-
-		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.array() != YTruth.graph.nodesData.array();
-		double loss = 0.0;
-		for (int i = 0; i < diff.size(); i++)
-		{
-			if (diff(i))
-				if (YTruth.nodeWeightsAvailable)
-					loss += YTruth.nodeWeights(i);
-				else
-					loss += 1.0/diff.size();
-		}
-		return loss;
 	}
 }

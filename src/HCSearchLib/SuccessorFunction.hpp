@@ -4,6 +4,7 @@
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
 #include "BerkeleySegmentation.h"
+#include "LossFunction.hpp"
 
 namespace HCSearch
 {
@@ -20,7 +21,8 @@ namespace HCSearch
 		/*!
 		 * @brief Generate successors.
 		 */
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound)=0;
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)=0;
 	};
 
 	/**************** Successor Functions ****************/
@@ -41,7 +43,8 @@ namespace HCSearch
 		FlipbitSuccessor();
 		~FlipbitSuccessor();
 		
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -55,7 +58,8 @@ namespace HCSearch
 		FlipbitNeighborSuccessor();
 		~FlipbitNeighborSuccessor();
 		
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -69,7 +73,8 @@ namespace HCSearch
 		FlipbitConfidencesNeighborSuccessor();
 		~FlipbitConfidencesNeighborSuccessor();
 		
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -99,7 +104,8 @@ namespace HCSearch
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold, bool useAllLevels);
 		~StochasticSuccessor();
 
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
@@ -171,7 +177,8 @@ namespace HCSearch
 		CutScheduleSuccessor(double cutParam);
 		~CutScheduleSuccessor();
 
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
@@ -244,7 +251,8 @@ namespace HCSearch
 			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
 		~StochasticScheduleSuccessor();
 
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T, int timeStep, int timeBound);
@@ -327,7 +335,8 @@ namespace HCSearch
 			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
 		~StochasticConstrainedSuccessor();
 
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
 		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs,
@@ -338,12 +347,26 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Learned schedule successor function.
+	 * @brief Oracle schedule successor function with local threshold cuts. TODO
 	 * 
-	 * Learn to schedule. 
 	 * For each subgraph, flip its label to all possible classes.
 	 */
-	class LearnedScheduleSuccessor : public ISuccessorFunction
+	class OracleScheduleSuccessor : public ISuccessorFunction
+	{
+	public:
+		OracleScheduleSuccessor();
+		~OracleScheduleSuccessor();
+
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
+	};
+
+	/*!
+	 * @brief Oracle successor function with global threshold cuts.
+	 * 
+	 * For each subgraph, flip its label to all possible classes.
+	 */
+	class OracleScheduleSuccessorGlobalCuts : public ISuccessorFunction
 	{
 	protected:
 		static const double TOP_CONFIDENCES_PROPORTION;
@@ -363,13 +386,14 @@ namespace HCSearch
 		int counter;
 
 	public:
-		LearnedScheduleSuccessor();
-		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam);
-		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
-		LearnedScheduleSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
-		~LearnedScheduleSuccessor();
+		OracleScheduleSuccessorGlobalCuts();
+		OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam);
+		OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam, bool useAllLevels);
+		OracleScheduleSuccessorGlobalCuts(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		~OracleScheduleSuccessorGlobalCuts();
 
-		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, ImgLabeling* YTruth, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, 
+			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
@@ -385,8 +409,6 @@ namespace HCSearch
 		vector<double> getAllUniqueUCMValues(vector<double> edgeWeights);
 		void getEdgeWeights(ImgFeatures& X, vector< MyPrimitives::Pair< int, int > >& edgeNodes, 
 			vector<double>& edgeWeights, map< int, set<int> >& edges, double T);
-
-		double computePixelHammingLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 	};
 }
 
