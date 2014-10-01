@@ -1,4 +1,5 @@
 #include "SuccessorFunction.hpp"
+#include "BerkeleySegmentation.h"
 #include "Globals.hpp"
 
 namespace HCSearch
