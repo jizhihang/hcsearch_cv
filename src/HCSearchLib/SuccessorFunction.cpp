@@ -1970,11 +1970,13 @@ namespace HCSearch
 
 	vector< ImgCandidate > OracleScheduleSuccessor::createCandidates(ImgLabeling& YPred, BSTNode* region)
 	{
-		int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+		const int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+		LOG(DEBUG) << "top k confidences=" << topKConfidences;
 
 		vector<ImgCandidate> successors;
 
 		set<Node_t> superpixels = region->getAllDescendentSuperpixels();
+		LOG(DEBUG) << "num superpixels=" << superpixels.size();
 
 		// get label set
 		set<int> candidateLabelsSet;
@@ -1984,6 +1986,7 @@ namespace HCSearch
 			set<int> labels = YPred.getTopConfidentLabels(node, topKConfidences);
 			superpixels.insert(labels.begin(), labels.end());
 		}
+		LOG(DEBUG) << "num label proposals=" << candidateLabelsSet.size();
 
 		// for each possible label, recolor region
 		for (set<int>::iterator it = candidateLabelsSet.begin(); it != candidateLabelsSet.end(); it++)
@@ -2000,7 +2003,7 @@ namespace HCSearch
 			set<Node_t> action;
 			for (set<Node_t>::iterator it2 = superpixels.begin(); it2 != superpixels.end(); it2++)
 			{
-				int node = *it2;
+				Node_t node = *it2;
 				YNew.graph.nodesData(node) = label;
 				action.insert(node);
 			}
