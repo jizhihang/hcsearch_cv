@@ -1926,7 +1926,7 @@ namespace HCSearch
 		}
 		LOG(DEBUG) << "BEST ACTION=" << bestAction;
 		LOG(DEBUG) << "BEST LOSS=" << bestLoss;
-		LOG(DEBUG) << "BEST REGION=" << bestRegion;
+		LOG(DEBUG) << "BEST REGION=" << bestRegion->nodeID;
 
 		// keep only best candidate
 		successors.push_back(bestCandidate);
