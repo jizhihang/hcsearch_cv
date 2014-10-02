@@ -1875,6 +1875,9 @@ namespace HCSearch
 					if (region->isRootNode())
 						continue;
 
+					if (!this->bst->isSiblingInPartition(region))
+						continue;
+
 					// merge
 					this->bst->mergeRegion(region);
 
