@@ -1795,7 +1795,7 @@ namespace HCSearch
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		const double BEST_LOSS_INIT_VALUE = 100000;
-		const int BST_INITIALIZATION_LEVEL = 0;
+		const int BST_INITIALIZATION_LEVEL = 8;
 
 		if (YTruth == NULL)
 		{
