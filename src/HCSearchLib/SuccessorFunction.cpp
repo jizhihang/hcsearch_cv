@@ -1795,7 +1795,6 @@ namespace HCSearch
 			ImgLabeling* YTruth, ILossFunction* lossFunc, int timeStep, int timeBound)
 	{
 		const double BEST_LOSS_INIT_VALUE = 100000;
-		const int BST_INITIALIZATION_LEVEL = 8;
 
 		if (YTruth == NULL)
 		{
@@ -1820,6 +1819,8 @@ namespace HCSearch
 			getEdgeWeights(X, edgeWeights);
 
 			this->bst = new BerkeleySegmentationTree(*YTruth, edgeWeights);
+
+			const int BST_INITIALIZATION_LEVEL = static_cast<int>(floor(0.5 * this->bst->getRoot()->height));
 
 			// initialize level to somewhere slightly below overall root
 			for (int numLevels = 0; numLevels < BST_INITIALIZATION_LEVEL; numLevels++)
