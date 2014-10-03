@@ -408,16 +408,29 @@ namespace HCSearch
 				intermediateNode->isActivated = true;
 
 				// update cut
-				if (intermediateNode->cut.count(node1) == 0)
+				for (set<Node_t>::iterator it3 = leftChildDescendents.begin(); it3 != leftChildDescendents.end(); it3++)
 				{
-					intermediateNode->cut[node1] = set<int>();
+					for (set<Node_t>::iterator it4 = rightChildDescendents.begin(); it4 != rightChildDescendents.end(); it4++)
+					{
+						int node1 = *it3;
+						int node2 = *it4;
+
+						if (graph.graph.adjList.count(node1) != 0 && graph.graph.adjList[node1].count(node2) != 0
+							&& graph.graph.adjList.count(node2) != 0 && graph.graph.adjList[node2].count(node1) != 0)
+						{
+							if (intermediateNode->cut.count(node1) == 0)
+							{
+								intermediateNode->cut[node1] = set<int>();
+							}
+							if (intermediateNode->cut.count(node2) == 0)
+							{
+								intermediateNode->cut[node2] = set<int>();
+							}
+							intermediateNode->cut[node1].insert(node2);
+							intermediateNode->cut[node2].insert(node1);
+						}
+					}
 				}
-				intermediateNode->cut[node1].insert(node2);
-				if (intermediateNode->cut.count(node2) == 0)
-				{
-					intermediateNode->cut[node2] = set<int>();
-				}
-				intermediateNode->cut[node2].insert(node1);
 				for (map< int, set<int> >::iterator it3 = leftChildNode->cut.begin(); it3 != leftChildNode->cut.end(); it3++)
 				{
 					int node = it3->first;
