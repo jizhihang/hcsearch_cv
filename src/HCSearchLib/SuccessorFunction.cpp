@@ -1780,7 +1780,7 @@ namespace HCSearch
 
 	/**************** Oracle Schedule Successor Function ****************/
 
-	const double OracleScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
+	const double OracleScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 1.0;//0.5;
 
 	OracleScheduleSuccessor::OracleScheduleSuccessor()
 	{
