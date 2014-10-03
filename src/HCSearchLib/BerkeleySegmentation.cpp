@@ -181,13 +181,13 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "no child of parent belongs to node, impossible case";
-			exit(1);
+			abort();
 		}
 
 		if (sibling == NULL)
 		{
 			LOG(ERROR) << "sibiling is NULL";
-			exit(1);
+			abort();
 		}
 
 		// check that the sibiling is in the current partition
@@ -220,15 +220,16 @@ namespace HCSearch
 		{
 			if (this->prevActionedNode->childL != NULL)
 			{
-				mergeRegion(this->prevActionedNode->childL);
+				return mergeRegion(this->prevActionedNode->childL);
 			}
 			else if (this->prevActionedNode->childR != NULL)
 			{
-				mergeRegion(this->prevActionedNode->childR);
+				return mergeRegion(this->prevActionedNode->childR);
 			}
 			else
 			{
 				LOG(ERROR) << "children of parent are NULL, impossible case";
+				abort();
 			}
 		}
 		else if (this->prevAction = MERGE)
@@ -236,12 +237,13 @@ namespace HCSearch
 			if (this->prevActionedNode->parent == NULL)
 			{
 				LOG(ERROR) << "previous action merged ROOT, impossible case";
+				abort();
 			}
 
-			splitRegion(this->prevActionedNode->parent);
+			return splitRegion(this->prevActionedNode->parent);
 		}
 
-		return true;
+		return false;
 	}
 
 	bool BerkeleySegmentationTree::canSplitRegion(BSTNode* node)
@@ -289,13 +291,13 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "no child of parent belongs to node, impossible case";
-			exit(1);
+			abort();
 		}
 
 		if (sibling == NULL)
 		{
 			LOG(ERROR) << "sibiling is NULL";
-			exit(1);
+			abort();
 		}
 
 		// check that the sibiling is in the current partition
