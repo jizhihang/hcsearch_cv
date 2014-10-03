@@ -52,11 +52,16 @@ namespace HCSearch
 	class BerkeleySegmentationTree
 	{
 	private:
+		enum BSTAction { STAY=0, SPLIT, MERGE, NO_ACTION };
+
 		BSTNode* root;
 		map<double, BSTNode*> levels; //!< all unique UCM edge weights represented as levels in tree
 		vector<double> weightsList; //!< all unique UCM edge weights sorted from lowest to highest
 
 		set<BSTNode*> currentPartition; //!< the current partitioning of regions
+
+		BSTAction prevAction; //!< previous action taken
+		BSTNode* prevActionedNode; //!< previous node that took action
 
 	public:
 		BerkeleySegmentationTree();
@@ -70,17 +75,27 @@ namespace HCSearch
 		/*!
 		 * Split the current region into two.
 		 */
-		void splitRegion(BSTNode* node);
+		bool splitRegion(BSTNode* node);
 
 		/*!
 		 * Merge the current region with its sibling into the parent.
 		 */
-		void mergeRegion(BSTNode* node);
+		bool mergeRegion(BSTNode* node);
+
+		/*!
+		 * Undo the previous action.
+		 */
+		bool undoPrevAction();
+
+		/*!
+		 * Check if the region can be split.
+		 */
+		bool canSplitRegion(BSTNode* node);
 
 		/*!
 		 * Check if the region's sibling is part of the current partition.
 		 */
-		bool isSiblingInPartition(BSTNode* node);
+		bool canMergeRegion(BSTNode* node);
 
 		/*!
 		 * Get the current partition.

@@ -1855,9 +1855,9 @@ namespace HCSearch
 					LOG(DEBUG) << "stay cand size=" << candSet.size();
 					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
 				}
-				if (i == 1)
+				else if (i == 1)
 				{
-					if (region->isLeafNode())
+					if (!this->bst->canSplitRegion(region))
 						continue;
 
 					// split
@@ -1872,22 +1872,11 @@ namespace HCSearch
 					candidateSet.insert(candidateSet.end(), candSet2.begin(), candSet2.end());
 
 					// undo split
-					if (region->childL != NULL)
-						this->bst->mergeRegion(region->childL);
-					else if (region->childR != NULL)
-						this->bst->mergeRegion(region->childR);
-					else
-					{
-						LOG(ERROR) << "child null, impossible case";
-						abort();
-					}
+					this->bst->undoPrevAction();
 				}
 				else if (i == 2)
 				{
-					if (region->isRootNode())
-						continue;
-
-					if (!this->bst->isSiblingInPartition(region))
+					if (!this->bst->canMergeRegion(region))
 						continue;
 
 					// merge
@@ -1899,7 +1888,7 @@ namespace HCSearch
 					candidateSet.insert(candidateSet.end(), candSet.begin(), candSet.end());
 
 					// undo merge
-					this->bst->splitRegion(region->parent);
+					this->bst->undoPrevAction();
 				}
 
 				LOG(DEBUG) << "region=" << region->nodeID << ", action=" << i << ", num cand=" << candidateSet.size();

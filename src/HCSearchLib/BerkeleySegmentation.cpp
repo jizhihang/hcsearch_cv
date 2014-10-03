@@ -112,6 +112,10 @@ namespace HCSearch
 
 		// set initial partitioning to whole image
 		this->currentPartition.insert(getRoot());
+
+		// keeping track of previous action
+		this->prevAction = NO_ACTION;
+		this->prevActionedNode = NULL;
 	}
 
 	BerkeleySegmentationTree::~BerkeleySegmentationTree()
@@ -119,19 +123,19 @@ namespace HCSearch
 		deleteTree(this->root);
 	}
 
-	void BerkeleySegmentationTree::splitRegion(BSTNode* node)
+	bool BerkeleySegmentationTree::splitRegion(BSTNode* node)
 	{
 		if (getCurrentPartition().count(node) == 0)
 		{
 			LOG(WARNING) << "region is not in the current partition.";
-			return;
+			return false;
 		}
 
 		// cannot split superpixels
 		if (node->isLeafNode())
 		{
 			LOG(WARNING) << "region cannot be split because it is a superpixel.";
-			return;
+			return false;
 		}
 
 		// split region
@@ -140,21 +144,27 @@ namespace HCSearch
 		this->currentPartition.insert(node->childR);
 
 		node->isActivated = false;
+
+		// record this action as previous action
+		this->prevAction = SPLIT;
+		this->prevActionedNode = node;
+
+		return true;
 	}
 
-	void BerkeleySegmentationTree::mergeRegion(BSTNode* node)
+	bool BerkeleySegmentationTree::mergeRegion(BSTNode* node)
 	{
 		if (getCurrentPartition().count(node) == 0)
 		{
 			LOG(WARNING) << "region is not in the current partition";
-			return;
+			return false;
 		}
 
 		// cannot merge top most level
 		if (node->isRootNode())
 		{
 			LOG(WARNING) << "region cannot be merged because it is the entire image.";
-			return;
+			return false;
 		}
 
 		// get the sibiling of the node
@@ -184,7 +194,7 @@ namespace HCSearch
 		if (getCurrentPartition().count(sibling) == 0)
 		{
 			LOG(WARNING) << "sibiling of region to merge is not in the current partition";
-			return;
+			return false;
 		}
 
 		// merge region
@@ -193,10 +203,72 @@ namespace HCSearch
 		this->currentPartition.insert(parent);
 
 		parent->isActivated = true;
+
+		// record this action as previous action
+		this->prevAction = MERGE;
+		this->prevActionedNode = node;
+
+		return true;
 	}
 
-	bool BerkeleySegmentationTree::isSiblingInPartition(BSTNode* node)
+	bool BerkeleySegmentationTree::undoPrevAction()
 	{
+		if (this->prevActionedNode == NULL)
+			return false;
+
+		if (this->prevAction = SPLIT)
+		{
+			if (this->prevActionedNode->childL != NULL)
+			{
+				mergeRegion(this->prevActionedNode->childL);
+			}
+			else if (this->prevActionedNode->childR != NULL)
+			{
+				mergeRegion(this->prevActionedNode->childR);
+			}
+			else
+			{
+				LOG(ERROR) << "children of parent are NULL, impossible case";
+			}
+		}
+		else if (this->prevAction = MERGE)
+		{
+			if (this->prevActionedNode->parent == NULL)
+			{
+				LOG(ERROR) << "previous action merged ROOT, impossible case";
+			}
+
+			splitRegion(this->prevActionedNode->parent);
+		}
+
+		return true;
+	}
+
+	bool BerkeleySegmentationTree::canSplitRegion(BSTNode* node)
+	{
+		// node needs to be in current partition
+		if (getCurrentPartition().count(node) == 0)
+		{
+			return false;
+		}
+
+		// cannot split superpixels
+		if (node->isLeafNode())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	bool BerkeleySegmentationTree::canMergeRegion(BSTNode* node)
+	{
+		// node needs to be in current partition
+		if (getCurrentPartition().count(node) == 0)
+		{
+			return false;
+		}
+
 		// top level does not have sibiling
 		if (node->isRootNode())
 		{
@@ -227,7 +299,7 @@ namespace HCSearch
 		}
 
 		// check that the sibiling is in the current partition
-		return getCurrentPartition().count(sibling) != 0;
+		return getCurrentPartition().count(sibling) == 0;
 	}
 
 	set<BSTNode*> BerkeleySegmentationTree::getCurrentPartition()
