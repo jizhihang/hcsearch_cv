@@ -116,6 +116,8 @@ namespace HCSearch
 		// keeping track of previous action
 		this->prevAction = NO_ACTION;
 		this->prevActionedNode = NULL;
+
+		this->currentCut = graph.graph.adjList;
 	}
 
 	BerkeleySegmentationTree::~BerkeleySegmentationTree()
@@ -148,6 +150,19 @@ namespace HCSearch
 		// record this action as previous action
 		this->prevAction = SPLIT;
 		this->prevActionedNode = node;
+
+		// record split
+		Edge_t edge = node->edge;
+		Node_t node1 = edge.first;
+		Node_t node2 = edge.second;
+		if (this->currentCut.count(node1) != 0)
+		{
+			this->currentCut[node1].erase(node2);
+		}
+		if (this->currentCut.count(node2) != 0)
+		{
+			this->currentCut[node2].erase(node1);
+		}
 
 		return true;
 	}
@@ -207,6 +222,21 @@ namespace HCSearch
 		// record this action as previous action
 		this->prevAction = MERGE;
 		this->prevActionedNode = node;
+
+		// record merge
+		Edge_t edge = node->edge;
+		Node_t node1 = edge.first;
+		Node_t node2 = edge.second;
+		if (this->currentCut.count(node1) == 0)
+		{
+			this->currentCut[node1] = set<int>();
+		}
+		if (this->currentCut.count(node2) == 0)
+		{
+			this->currentCut[node2] = set<int>();
+		}
+		this->currentCut[node1].insert(node2);
+		this->currentCut[node2].insert(node1);
 
 		return true;
 	}
@@ -314,6 +344,11 @@ namespace HCSearch
 		return this->root;
 	}
 
+	map< int, set<int> > BerkeleySegmentationTree::getCurrentCut()
+	{
+		return this->currentCut;
+	}
+
 	// TODO: figure out a sanity check to make sure edge weights are good
 	void BerkeleySegmentationTree::constructTreeHelper(ImgLabeling graph, 
 		map< Edge_t, double > edgeWeights, vector<double> weightsList)
@@ -400,6 +435,7 @@ namespace HCSearch
 				intermediateNode->nodeID = nodeID;
 				intermediateNode->childL = leftChildNode;
 				intermediateNode->childR = rightChildNode;
+				intermediateNode->edge = edge;
 				intermediateNode->ucmValue = threshold;
 				set<Node_t> leftChildDescendents = leftChildNode->getAllDescendentSuperpixels();
 				intermediateNode->descendentSuperpixels.insert(leftChildDescendents.begin(), leftChildDescendents.end());
@@ -493,6 +529,7 @@ namespace HCSearch
 		this->childL = NULL;
 		this->childR = NULL;
 		this->nodeID = -1;
+		this->edge = Edge_t();
 		this->ucmValue = 0;
 		this->descendentSuperpixels = set<Node_t>();
 		this->isActivated = false;

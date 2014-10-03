@@ -63,6 +63,8 @@ namespace HCSearch
 		BSTAction prevAction; //!< previous action taken
 		BSTNode* prevActionedNode; //!< previous node that took action
 
+		map< int, set<int> > currentCut; //!< keep track of current cuts
+
 	public:
 		BerkeleySegmentationTree();
 		
@@ -107,6 +109,11 @@ namespace HCSearch
 		 */
 		BSTNode* getRoot();
 
+		/*!
+		 * Get the current cut.
+		 */
+		map< int, set<int> > getCurrentCut();
+
 	private:
 		/*!
 		 * Helper to construct the initial tree.
@@ -134,6 +141,7 @@ namespace HCSearch
 		BSTNode* childL; //!< left child node, NULL if none
 		BSTNode* childR; //!< right child node, NULL if none
 		int nodeID; //!< if leaf node, ID of superpixel; otherwise a unique ID for the intermediate node
+		Edge_t edge; //!< if intermediate node, store edge as node pairs
 		double ucmValue; //!< UCM value of edge between the two children nodes
 		set<Node_t> descendentSuperpixels; //!< store descendent superpixel IDs for fast access
 

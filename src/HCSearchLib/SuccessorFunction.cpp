@@ -2004,7 +2004,8 @@ namespace HCSearch
 			ImgLabeling YNew;
 			YNew.confidences = YPred.confidences;
 			YNew.confidencesAvailable = YPred.confidencesAvailable;
-			YNew.stochasticCutsAvailable = false; // TODO
+			YNew.stochasticCuts = this->bst->getCurrentCut();
+			YNew.stochasticCutsAvailable = true;
 			YNew.graph = YPred.graph;
 
 			set<Node_t> action;
