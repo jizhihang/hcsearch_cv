@@ -227,7 +227,7 @@ namespace HCSearch
 		}
 
 		// check that the sibiling is in the current partition
-		return getCurrentPartition().count(sibling) == 0;
+		return getCurrentPartition().count(sibling) != 0;
 	}
 
 	set<BSTNode*> BerkeleySegmentationTree::getCurrentPartition()
