@@ -406,6 +406,7 @@ namespace HCSearch
 				set<Node_t> rightChildDescendents = rightChildNode->getAllDescendentSuperpixels();
 				intermediateNode->descendentSuperpixels.insert(rightChildDescendents.begin(), rightChildDescendents.end());
 				intermediateNode->isActivated = true;
+				intermediateNode->height = max(leftChildNode->height, rightChildNode->height)+1;
 
 				// update cut
 				for (set<Node_t>::iterator it3 = leftChildDescendents.begin(); it3 != leftChildDescendents.end(); it3++)
@@ -546,6 +547,7 @@ namespace HCSearch
 		this->ucmValue = 0;
 		this->descendentSuperpixels = set<Node_t>();
 		this->isActivated = false;
+		this->height = 0;
 	}
 
 	BSTNode::~BSTNode()

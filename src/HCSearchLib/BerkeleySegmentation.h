@@ -137,8 +137,8 @@ namespace HCSearch
 		map< int, set<int> > cut; //!< if intermediate node, store edge as node pairs
 		double ucmValue; //!< UCM value of edge between the two children nodes
 		set<Node_t> descendentSuperpixels; //!< store descendent superpixel IDs for fast access
-
 		bool isActivated; //!< if activated, then region is covered
+		int height; //!< height of subtree rooted at this node
 
 	public:
 		BSTNode();
