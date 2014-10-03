@@ -1820,7 +1820,9 @@ namespace HCSearch
 
 			this->bst = new BerkeleySegmentationTree(*YTruth, edgeWeights);
 
-			const int BST_INITIALIZATION_LEVEL = static_cast<int>(floor(0.5 * this->bst->getRoot()->height));
+			const int BST_INITIALIZATION_LEVEL = static_cast<int>(floor(0.25 * this->bst->getRoot()->height));
+			LOG(DEBUG) << "height=" << this->bst->getRoot()->height;
+			LOG(DEBUG) << "initialization level=" << BST_INITIALIZATION_LEVEL;
 
 			// initialize level to somewhere slightly below overall root
 			for (int numLevels = 0; numLevels < BST_INITIALIZATION_LEVEL; numLevels++)
