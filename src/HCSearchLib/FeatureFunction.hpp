@@ -373,6 +373,42 @@ namespace HCSearch
 	private:
 		string mutexStringHelper(int class1, int class2, string config);
 	};
+
+	/*!
+	 * @brief Standard CRF features with raw unary and raw simpler pairwise potentials.
+	 */
+	class StandardSimpleFeatures : public IFeatureFunction
+	{
+	protected:
+		double lambda1;
+		double lambda2;
+		double lambda3;
+
+	public:
+		StandardSimpleFeatures();
+		StandardSimpleFeatures(double lambda1, double lambda2, double lambda3);
+		~StandardSimpleFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2);
+	};
 }
 
 #endif
