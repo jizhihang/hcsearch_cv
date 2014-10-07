@@ -446,6 +446,8 @@ namespace MyProgramOptions
 						po.heuristicFeaturesMode = STANDARD_PAIR_COUNTS;
 					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
 						po.heuristicFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-simple") == 0)
+						po.heuristicFeaturesMode = STANDARD_SIMPLE;
 				}
 			}
 			else if (strcmp(argv[i], "--cfeatures") == 0)
@@ -470,6 +472,8 @@ namespace MyProgramOptions
 						po.costFeaturesMode = STANDARD_PAIR_COUNTS;
 					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
 						po.costFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-simple") == 0)
+						po.costFeaturesMode = STANDARD_SIMPLE;
 				}
 			}
 			else if (strcmp(argv[i], "--pfeatures") == 0)
@@ -496,6 +500,8 @@ namespace MyProgramOptions
 						po.pruneFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
 					else if (strcmp(argv[i+1], "standard-prune") == 0)
 						po.pruneFeaturesMode = STANDARD_PRUNE;
+					else if (strcmp(argv[i+1], "standard-simple") == 0)
+						po.pruneFeaturesMode = STANDARD_SIMPLE;
 				}
 			}
 			else if (strcmp(argv[i], "--loss") == 0)
@@ -718,11 +724,11 @@ namespace MyProgramOptions
 		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
 		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
 		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
-			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-simple" << endl;
 		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
-			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-simple" << endl;
 		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
-			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune|standard-simple" << endl;
 		cerr << "\t--logs-path arg\t" << ": logs folder name" << endl;
 		cerr << "\t--max-cutting-threshold arg\t" << ": maximum threshold for deciding to cut edges" << endl;
 		cerr << "\t--min-cutting-threshold arg\t" << ": minimum threshold for deciding to cut edges" << endl;

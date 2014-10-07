@@ -126,6 +126,13 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "dense CRF features" << endl;
 		heuristicFeatFunc = new HCSearch::DenseCRFFeatures();
 		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
+		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		heuristicFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";
 	}
@@ -173,6 +180,13 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;
 		costFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
+		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		costFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";
@@ -225,6 +239,13 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	case MyProgramOptions::ProgramOptions::STANDARD_PRUNE:
 		LOG() << "standard prune features" << endl;
 		pruneFeatFunc = new HCSearch::StandardPruneFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
+		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		pruneFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";

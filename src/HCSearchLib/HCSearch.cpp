@@ -802,8 +802,8 @@ namespace HCSearch
 			{
 				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-				if (rankerType == VW_RANK)
-					Training::restartLearning(learningModel, LEARN_H);
+				//if (rankerType == VW_RANK)
+					//Training::restartLearning(learningModel, LEARN_H);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -814,14 +814,14 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, NULL, meta);
 
-				if (rankerType == VW_RANK)
-					Training::finishLearning(learningModel, LEARN_H);
+				//if (rankerType == VW_RANK)
+					//Training::finishLearning(learningModel, LEARN_H);
 			}
 		}
 		
 		// Merge and learn step
-		if (rankerType != VW_RANK)
-			Training::finishLearning(learningModel, LEARN_H);
+		//if (rankerType != VW_RANK)
+		Training::finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -850,8 +850,8 @@ namespace HCSearch
 			{
 				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-				if (rankerType == VW_RANK)
-					Training::restartLearning(learningModel, LEARN_C);
+				//if (rankerType == VW_RANK)
+					//Training::restartLearning(learningModel, LEARN_C);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -862,14 +862,14 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
 
-				if (rankerType == VW_RANK)
-					Training::finishLearning(learningModel, LEARN_C);
+				//if (rankerType == VW_RANK)
+					//Training::finishLearning(learningModel, LEARN_C);
 			}
 		}
 		
 		// Merge and learn step
-		if (rankerType != VW_RANK)
-			Training::finishLearning(learningModel, LEARN_C);
+		//if (rankerType != VW_RANK)
+		Training::finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
 		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -898,8 +898,8 @@ namespace HCSearch
 			{
 				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-				if (rankerType == VW_RANK)
-					Training::restartLearning(learningModel, LEARN_C_ORACLE_H);
+				//if (rankerType == VW_RANK)
+					//Training::restartLearning(learningModel, LEARN_C_ORACLE_H);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -910,14 +910,14 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, NULL, meta);
 
-				if (rankerType == VW_RANK)
-					Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
+				//if (rankerType == VW_RANK)
+					//Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
 			}
 		}
 		
 		// Merge and learn step
-		if (rankerType != VW_RANK)
-			Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
+		//if (rankerType != VW_RANK)
+		Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -946,8 +946,8 @@ namespace HCSearch
 			{
 				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-				if (rankerType == VW_RANK)
-					Training::restartLearning(learningModel, LEARN_PRUNE);
+				//if (rankerType == VW_RANK)
+					//Training::restartLearning(learningModel, LEARN_PRUNE);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -958,14 +958,14 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
 
-				if (rankerType == VW_RANK)
-					Training::finishLearning(learningModel, LEARN_PRUNE);
+				//if (rankerType == VW_RANK)
+					//Training::finishLearning(learningModel, LEARN_PRUNE);
 			}
 		}
 		
 		// Merge and learn step
-		if (rankerType != VW_RANK)
-			Training::finishLearning(learningModel, LEARN_PRUNE);
+		//if (rankerType != VW_RANK)
+		Training::finishLearning(learningModel, LEARN_PRUNE);
 
 		clock_t toc = clock();
 		LOG() << "total learnP time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
