@@ -770,20 +770,20 @@ namespace HCSearch
 
 			/***** train if applicable *****/
 
-			if (searchType == LEARN_H || searchType == LEARN_PRUNE)
-			{
-				if (rankerType == VW_RANK)
-				{
-					Training::finishLearning(learningModel, searchType);
-					Training::restartLearning(learningModel, searchType);
-					if (searchType == LEARN_PRUNE)
-					{
-						HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
-						HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
-						pruneCast->setRanker(pruneModel);
-					}
-				}
-			}
+			//if (searchType == LEARN_H || searchType == LEARN_PRUNE)
+			//{
+			//	if (rankerType == VW_RANK)
+			//	{
+			//		Training::finishLearning(learningModel, searchType);
+			//		Training::restartLearning(learningModel, searchType);
+			//		if (searchType == LEARN_PRUNE)
+			//		{
+			//			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			//			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+			//			pruneCast->setRanker(pruneModel);
+			//		}
+			//	}
+			//}
 
 			/***** increment time step *****/
 			timeStep++;
