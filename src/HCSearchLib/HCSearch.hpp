@@ -538,6 +538,15 @@ namespace HCSearch
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
 
 		/*!
+		 * Load preprocessed dataset: only one image
+		 * Must call Utility::configure() first to set up dataset path.
+		 * @param[in]  fileName file name to load
+		 * @param[out] X structured features
+		 * @param[out] Y structured labeling
+		 */
+		static void loadImage(string fileName, ImgFeatures* X, ImgLabeling* Y);
+
+		/*!
 		 * Clean up dataset objects: delete and empty.
 		 * @param[out] XTrain Vector of structured features for training
 		 * @param[out] YTrain Vector of structured labelings for training
@@ -549,6 +558,13 @@ namespace HCSearch
 		static void unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+
+		/*!
+		 * Clean up dataset object
+		 * @param[out] X structured features
+		 * @param[out] Y structured labeling
+		 */
+		static void unloadImage(ImgFeatures* X, ImgLabeling* Y);
 
 		/*!
 		 * Computes the range of tasks for rank to perform. Used for scheduling parallel processes.

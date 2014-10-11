@@ -227,6 +227,62 @@ namespace HCSearch
 		LOG() << endl;
 	}
 
+	void Dataset::loadImage(string fileName, ImgFeatures* X, ImgLabeling* Y)
+	{
+		LOG() << "\tLoading " << fileName << "..." << endl;
+
+		// read meta file
+		string metaFile = Global::settings->paths->INPUT_META_DIR + fileName + ".txt";
+		int numNodes, numFeatures, height, width;
+		readMetaFile(metaFile, numNodes, numFeatures, height, width);
+
+		// read nodes file
+		string nodesFile = Global::settings->paths->INPUT_NODES_DIR + fileName + ".txt";
+		VectorXi labels = VectorXi::Zero(numNodes);
+		MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+		readNodesFile(nodesFile, labels, features);
+
+		// read node locations
+		string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + fileName + ".txt";
+		MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
+		VectorXd nodeWeights = VectorXd::Zero(numNodes);
+		readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
+
+		// read edges file
+		string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + fileName + ".txt";
+		AdjList_t edges;
+		map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+		readEdgesFile(edgesFile, edges, edgeWeights);
+
+		// read segments file
+		string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + fileName + ".txt";
+		MatrixXi segments = MatrixXi::Zero(height, width);
+		readSegmentsFile(segmentsFile, segments);
+
+		// construct ImgFeatures
+		FeatureGraph featureGraph;
+		featureGraph.adjList = edges;
+		featureGraph.nodesData = features;
+		X = new ImgFeatures();
+		X->graph = featureGraph;
+		X->filename = fileName;
+		X->segmentsAvailable = true;
+		X->segments = segments;
+		X->nodeLocationsAvailable = true;
+		X->nodeLocations = nodeLocations;
+		X->edgeWeightsAvailable = Global::settings->USE_EDGE_WEIGHTS;
+		X->edgeWeights = edgeWeights;
+
+		// construct ImgLabeling
+		LabelGraph labelGraph;
+		labelGraph.adjList = edges;
+		labelGraph.nodesData = labels;
+		Y = new ImgLabeling();
+		Y->graph = labelGraph;
+		Y->nodeWeightsAvailable = true;
+		Y->nodeWeights = nodeWeights;
+	}
+
 	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
@@ -269,6 +325,14 @@ namespace HCSearch
 		XTest.clear();
 	}
 
+	void Dataset::unloadImage(ImgFeatures* X, ImgLabeling* Y)
+	{
+		delete X;
+		delete Y;
+		X = NULL;
+		Y = NULL;
+	}
+
 	void Dataset::computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end)
 	{
 		if (rank >= numTasks)
@@ -295,59 +359,10 @@ namespace HCSearch
 	{
 		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
 		{
-			string filename = *it;
-			LOG() << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures, height, width;
-			readMetaFile(metaFile, numNodes, numFeatures, height, width);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read node locations
-			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
-			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
-			VectorXd nodeWeights = VectorXd::Zero(numNodes);
-			readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			map< MyPrimitives::Pair<int, int>, double > edgeWeights;
-			readEdgesFile(edgesFile, edges, edgeWeights);
-
-			// read segments file
-			string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + filename + ".txt";
-			MatrixXi segments = MatrixXi::Zero(height, width);
-			readSegmentsFile(segmentsFile, segments);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-			X->segmentsAvailable = true;
-			X->segments = segments;
-			X->nodeLocationsAvailable = true;
-			X->nodeLocations = nodeLocations;
-			X->edgeWeightsAvailable = Global::settings->USE_EDGE_WEIGHTS;
-			X->edgeWeights = edgeWeights;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			Y->nodeWeightsAvailable = true;
-			Y->nodeWeights = nodeWeights;
+			string fileName = *it;
+			ImgFeatures* X = NULL;
+			ImgLabeling* Y = NULL;
+			loadImage(fileName, X, Y);
 			
 			// push into list
 			XSet.push_back(X);
