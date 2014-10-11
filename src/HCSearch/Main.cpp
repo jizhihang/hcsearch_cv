@@ -440,12 +440,12 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::RankerType rankerType = po.rankLearnerType;
 
 	// datasets
-	vector< HCSearch::ImgFeatures* > XTrain;
-	vector< HCSearch::ImgLabeling* > YTrain;
-	vector< HCSearch::ImgFeatures* > XValidation;
-	vector< HCSearch::ImgLabeling* > YValidation;
-	vector< HCSearch::ImgFeatures* > XTest;
-	vector< HCSearch::ImgLabeling* > YTest;
+	vector<string> XTrain;
+	vector<string> YTrain;
+	vector<string> XValidation;
+	vector<string> YValidation;
+	vector<string> XTest;
+	vector<string> YTest;
 
 	// load dataset
 	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
@@ -679,17 +679,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = XTest[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(XTest[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, meta);
 				
 					// save the prediction
@@ -712,8 +716,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -744,17 +750,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = XTest[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(XTest[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, heuristicModel, meta);
 				
 					// save the prediction
@@ -777,8 +787,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -811,17 +823,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = XTest[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(XTest[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, costModel, meta);
 				
 					// save the prediction
@@ -844,8 +860,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -879,17 +897,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = XTest[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(XTest[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
 
 					// save the prediction
@@ -912,8 +934,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -940,7 +964,6 @@ void run(MyProgramOptions::ProgramOptions po)
 	// clean up
 	delete searchSpace;
 	delete searchProcedure;
-	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 
 	clock_t toc = clock();
 	LOG() << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;

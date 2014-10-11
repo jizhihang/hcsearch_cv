@@ -5,12 +5,12 @@ void demo(int timeBound)
 	// This demo appears in the Quick Start (API) guide.
 
 	// datasets
-	vector< HCSearch::ImgFeatures* > XTrain;
-	vector< HCSearch::ImgLabeling* > YTrain;
-	vector< HCSearch::ImgFeatures* > XValidation;
-	vector< HCSearch::ImgLabeling* > YValidation;
-	vector< HCSearch::ImgFeatures* > XTest;
-	vector< HCSearch::ImgLabeling* > YTest;
+	vector<string> XTrain;
+	vector<string> YTrain;
+	vector<string> XValidation;
+	vector<string> YValidation;
+	vector<string> XTest;
+	vector<string> YTest;
 
 	// load dataset
 	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
@@ -39,8 +39,14 @@ void demo(int timeBound)
 	heuristicModel, timeBound, searchSpace, searchProcedure, ranker, 1);
 
 	// run HC search inference on the first test example for demo
+	HCSearch::ImgFeatures* XTestObj = NULL;
+	HCSearch::ImgLabeling* YTestObj = NULL;
+	HCSearch::Dataset::loadImage(XTest[0], XTestObj, YTestObj);
+
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata; // no meta data needed for this demo
-	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
+	HCSearch::Inference::runHCSearch(XTestObj, timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
+
+	HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 	// save models for later use
 	HCSearch::Model::saveModel(heuristicModel, "path/to/heuristic/model.txt", ranker);
@@ -51,5 +57,4 @@ void demo(int timeBound)
 	delete searchProcedure;
 	delete heuristicModel;
 	delete costModel;
-	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }

@@ -533,9 +533,9 @@ namespace HCSearch
 		 * @param[out] XTest Vector of structured features for test
 		 * @param[out] YTest Vector of structured labelings for test
 		 */
-		static void loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+		static void loadDataset(vector<string>& XTrain, vector<string>& YTrain, 
+			vector<string>& XValidation, vector<string>& YValidation, 
+			vector<string>& XTest, vector<string>& YTest);
 
 		/*!
 		 * Load preprocessed dataset: only one image
@@ -545,19 +545,6 @@ namespace HCSearch
 		 * @param[out] Y structured labeling
 		 */
 		static void loadImage(string fileName, ImgFeatures* X, ImgLabeling* Y);
-
-		/*!
-		 * Clean up dataset objects: delete and empty.
-		 * @param[out] XTrain Vector of structured features for training
-		 * @param[out] YTrain Vector of structured labelings for training
-		 * @param[out] XValidation Vector of structured features for validation
-		 * @param[out] YValidation Vector of structured labelings for validation
-		 * @param[out] XTest Vector of structured features for test
-		 * @param[out] YTest Vector of structured labelings for test
-		 */
-		static void unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
 
 		/*!
 		 * Clean up dataset object
@@ -710,8 +697,8 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned heuristic model
 		 */
-		static IRankModel* learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnH(vector<string>& XTrain, vector<string>& YTrain, 
+			vector<string>& XValidation, vector<string>& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
@@ -730,8 +717,8 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost model
 		 */
-		static IRankModel* learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnC(vector<string>& XTrain, vector<string>& YTrain, 
+			vector<string>& XValidation, vector<string>& YValidation, 
 			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
@@ -749,8 +736,8 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost (using oracle H) model
 		 */
-		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnCWithOracleH(vector<string>& XTrain, vector<string>& YTrain, 
+			vector<string>& XValidation, vector<string>& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
@@ -768,11 +755,11 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned prune model
 		 */
-		static IRankModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnP(vector<string>& XTrain, vector<string>& YTrain, 
+			vector<string>& XValidation, vector<string>& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
-		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
+		static map<string, int> discoverPairwiseClassConstraints(vector<string>& XTrain, vector<string>& YTrain);
     };
 
 	/*! @} */
