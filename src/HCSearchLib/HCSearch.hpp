@@ -682,10 +682,8 @@ namespace HCSearch
 		 * Learn heuristic function. 
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a heuristic model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -693,18 +691,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned heuristic model
 		 */
-		static IRankModel* learnH(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
+		static IRankModel* learnH(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given learned heuristic function. 
 		 * Given training data, validation data, time bound, search space, procedure and learned heuristic, 
 		 * learn a cost model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] heuristicModel Learned heuristic model
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
@@ -713,18 +708,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost model
 		 */
-		static IRankModel* learnC(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
+		static IRankModel* learnC(vector<string>& trainFiles, vector<string>& validFiles, 
 			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given oracle heuristic function.
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a cost model using an oracle H and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -732,18 +724,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost (using oracle H) model
 		 */
-		static IRankModel* learnCWithOracleH(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
+		static IRankModel* learnCWithOracleH(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn prune function.
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a prune model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -751,11 +740,10 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned prune model
 		 */
-		static IRankModel* learnP(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
+		static IRankModel* learnP(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
-		static map<string, int> discoverPairwiseClassConstraints(vector<string>& XTrain, vector<string>& YTrain);
+		static map<string, int> discoverPairwiseClassConstraints(vector<string>& trainFiles);
     };
 
 	/*! @} */

@@ -28,11 +28,11 @@ void demo(int timeBound)
 	HCSearch::RankerType ranker = HCSearch::VW_RANK;
 
 	// train H
-	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(trainFiles, trainFiles, validationFiles, validationFiles, 
+	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(trainFiles, validationFiles, 
 	timeBound, searchSpace, searchProcedure, ranker, 1);
 
 	// train C
-	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(trainFiles, trainFiles, validationFiles, validationFiles, 
+	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(trainFiles, validationFiles, 
 	heuristicModel, timeBound, searchSpace, searchProcedure, ranker, 1);
 
 	// run HC search inference on the first test example for demo

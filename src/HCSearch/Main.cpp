@@ -529,7 +529,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Learning H ===" << endl;
 
 			// learn heuristic, save heuristic model
-			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(trainFiles, trainFiles, validationFiles, validationFiles, 
+			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(trainFiles, validationFiles,
 				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -556,7 +556,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			// load heuristic, learn cost, save cost model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(trainFiles, trainFiles, validationFiles, validationFiles, 
+			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(trainFiles, validationFiles,
 				heuristicModel, timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -583,7 +583,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Learning C with Oracle H ===" << endl;
 
 			// learn cost, save cost model
-			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(trainFiles, trainFiles, validationFiles, validationFiles, 
+			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(trainFiles, validationFiles,
 				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -611,7 +611,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// learn cost, save cost model
 			if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 			{
-				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(trainFiles, trainFiles, validationFiles, validationFiles, 
+				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(trainFiles, validationFiles,
 					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
 				
 				// set the prune function
@@ -647,7 +647,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Discovering Mutex ===" << endl;
 
 			// discover mutex constraints
-			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(trainFiles, trainFiles);
+			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(trainFiles);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 			{
