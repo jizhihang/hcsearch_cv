@@ -542,14 +542,14 @@ namespace HCSearch
 		 * @param[out] X structured features
 		 * @param[out] Y structured labeling
 		 */
-		static void loadImage(string fileName, ImgFeatures* X, ImgLabeling* Y);
+		static void loadImage(string fileName, ImgFeatures*& X, ImgLabeling*& Y);
 
 		/*!
 		 * Clean up dataset object
 		 * @param[out] X structured features
 		 * @param[out] Y structured labeling
 		 */
-		static void unloadImage(ImgFeatures* X, ImgLabeling* Y);
+		static void unloadImage(ImgFeatures*& X, ImgLabeling*& Y);
 
 		/*!
 		 * Computes the range of tasks for rank to perform. Used for scheduling parallel processes.

@@ -222,7 +222,7 @@ namespace HCSearch
 		LOG() << endl;
 	}
 
-	void Dataset::loadImage(string fileName, ImgFeatures* X, ImgLabeling* Y)
+	void Dataset::loadImage(string fileName, ImgFeatures*& X, ImgLabeling*& Y)
 	{
 		LOG() << "\tLoading " << fileName << "..." << endl;
 
@@ -278,7 +278,7 @@ namespace HCSearch
 		Y->nodeWeights = nodeWeights;
 	}
 
-	void Dataset::unloadImage(ImgFeatures* X, ImgLabeling* Y)
+	void Dataset::unloadImage(ImgFeatures*& X, ImgLabeling*& Y)
 	{
 		delete X;
 		delete Y;
