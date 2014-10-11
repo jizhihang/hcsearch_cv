@@ -83,7 +83,7 @@ using namespace std;
  * 
  * The HCSearchLib is a static library. You can build it and then link it to your C++ projects.
  * 
- * The following is a snippet of demo code using the API. 
+ * The following is a snippet of (OLD!) demo code using the API. 
  * It loads the dataset, learns the heuristic and cost models, and performs inference on the first test example.
  * 
  * @code{.cpp}
@@ -178,7 +178,7 @@ using namespace std;
  * 
  * @section util_sec Dataset and Model Utilities
  * 
- * 1. Use HCSearch::Dataset::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
+ * 1. (OLD) Use HCSearch::Dataset::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
  * Right before exiting the program, use HCSearch::Dataset::unloadDataset() to clean up dataset resources.
  * 
  * 2. To save a heuristic or cost model, use the HCSearch::Model::saveModel(). 
@@ -510,10 +510,13 @@ namespace HCSearch
 	 * @brief Provide utilities to load/unload datasets.
 	 *
 	 * - Use the Dataset::loadDataset() 
-	 * function to read in a preprocessed dataset. 
+	 * function to read in file names from dataset. 
 	 *
-	 * - Use the Dataset::unloadDataset() 
-	 * function to clean up dataset resources properly before exiting the program.
+	 * - Use the Dataset::loadImage() 
+	 * function to read in preprocessed data. 
+	 *
+	 * - Use the Dataset::unloadImage() 
+	 * function to clean up preprocessed data. 
 	 * @{
 	 */
 
@@ -524,18 +527,13 @@ namespace HCSearch
 	{
 	public:
 		/*!
-		 * Load preprocessed dataset. 
+		 * Load dataset file names.
 		 * Must call Utility::configure() first to set up dataset path.
-		 * @param[out] XTrain Vector of structured features for training
-		 * @param[out] YTrain Vector of structured labelings for training
-		 * @param[out] XValidation Vector of structured features for validation
-		 * @param[out] YValidation Vector of structured labelings for validation
-		 * @param[out] XTest Vector of structured features for test
-		 * @param[out] YTest Vector of structured labelings for test
+		 * @param[out] trainFiles Vector of training image file names
+		 * @param[out] validationFiles Vector of validation image file names
+		 * @param[out] testFiles Vector of test image file names
 		 */
-		static void loadDataset(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
-			vector<string>& XTest, vector<string>& YTest);
+		static void loadDataset(vector<string>& trainFiles, vector<string>& validationFiles, vector<string>& testFiles);
 
 		/*!
 		 * Load preprocessed dataset: only one image
@@ -564,8 +562,6 @@ namespace HCSearch
 		static void computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end);
 
 	private:
-		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
-
 		/*!
 		 * Read split file (Train.txt, Validation.txt, Test.txt).
 		 * @param[in] filename Path to split file

@@ -200,32 +200,24 @@ namespace HCSearch
 
 	/**************** Dataset ****************/
 
-	void Dataset::loadDataset(vector<string>& XTrain, vector<string>& YTrain, 
-			vector<string>& XValidation, vector<string>& YValidation, 
-			vector<string>& XTest, vector<string>& YTest)
+	void Dataset::loadDataset(vector<string>& trainFiles, vector<string>& validationFiles, vector<string>& testFiles)
 	{
 		LOG() << "=== Loading Dataset ===" << endl;
 
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
 		LOG() << endl << "Reading from " << trainSplitFile << "..." << endl;
-		vector<string> trainFiles = readSplitsFile(trainSplitFile);
-		XTrain = trainFiles;
-		YTrain = trainFiles;
+		trainFiles = readSplitsFile(trainSplitFile);
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
 		LOG() << endl << "Reading from " << validSplitFile << "..." << endl;
-		vector<string> validFiles = readSplitsFile(validSplitFile);
-		XValidation = validFiles;
-		YValidation = validFiles;
+		validationFiles = readSplitsFile(validSplitFile);
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
 		LOG() << endl << "Reading from " << testSplitFile << "..." << endl;
-		vector<string> testFiles = readSplitsFile(testSplitFile);
-		XTest = testFiles;
-		YTest = testFiles;
+		testFiles = readSplitsFile(testSplitFile);
 
 		LOG() << endl;
 	}
@@ -313,21 +305,6 @@ namespace HCSearch
 				start = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
 				end = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank+1 - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
 			}
-		}
-	}
-
-	void Dataset::loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet)
-	{
-		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
-		{
-			string fileName = *it;
-			ImgFeatures* X = NULL;
-			ImgLabeling* Y = NULL;
-			loadImage(fileName, X, Y);
-			
-			// push into list
-			XSet.push_back(X);
-			YSet.push_back(Y);
 		}
 	}
 
