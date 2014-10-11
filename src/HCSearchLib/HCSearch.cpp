@@ -765,16 +765,12 @@ namespace HCSearch
 
 				ImgFeatures* XTrainObj = NULL;
 				ImgLabeling* YTrainObj = NULL;
-				ImgFeatures* XValidObj = NULL;
-				ImgLabeling* YValidObj = NULL;
 				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-				Dataset::loadImage(validFiles[i], XValidObj, YValidObj);
 
 				// run search
 				searchProcedure->performSearch(LEARN_H, *XTrainObj, YTrainObj, timeBound, searchSpace, learningModel, NULL, NULL, meta);
 
 				Dataset::unloadImage(XTrainObj, YTrainObj);
-				Dataset::unloadImage(XValidObj, YValidObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_H);
@@ -822,16 +818,12 @@ namespace HCSearch
 
 				ImgFeatures* XTrainObj = NULL;
 				ImgLabeling* YTrainObj = NULL;
-				ImgFeatures* XValidObj = NULL;
-				ImgLabeling* YValidObj = NULL;
 				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-				Dataset::loadImage(validFiles[i], XValidObj, YValidObj);
 
 				// run search
 				searchProcedure->performSearch(LEARN_C, *XTrainObj, YTrainObj, timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
 
 				Dataset::unloadImage(XTrainObj, YTrainObj);
-				Dataset::unloadImage(XValidObj, YValidObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_C);
@@ -879,16 +871,12 @@ namespace HCSearch
 
 				ImgFeatures* XTrainObj = NULL;
 				ImgLabeling* YTrainObj = NULL;
-				ImgFeatures* XValidObj = NULL;
-				ImgLabeling* YValidObj = NULL;
 				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-				Dataset::loadImage(validFiles[i], XValidObj, YValidObj);
 
 				// run search
 				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, learningModel, NULL, meta);
 
 				Dataset::unloadImage(XTrainObj, YTrainObj);
-				Dataset::unloadImage(XValidObj, YValidObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
@@ -936,16 +924,12 @@ namespace HCSearch
 
 				ImgFeatures* XTrainObj = NULL;
 				ImgLabeling* YTrainObj = NULL;
-				ImgFeatures* XValidObj = NULL;
-				ImgLabeling* YValidObj = NULL;
 				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-				Dataset::loadImage(validFiles[i], XValidObj, YValidObj);
 
 				// run search
 				searchProcedure->performSearch(LEARN_PRUNE, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, NULL, learningModel, meta);
 
 				Dataset::unloadImage(XTrainObj, YTrainObj);
-				Dataset::unloadImage(XValidObj, YValidObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_PRUNE);
