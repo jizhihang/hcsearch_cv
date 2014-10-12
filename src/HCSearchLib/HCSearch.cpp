@@ -200,73 +200,90 @@ namespace HCSearch
 
 	/**************** Dataset ****************/
 
-	void Dataset::loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
+	void Dataset::loadDataset(vector<string>& trainFiles, vector<string>& validationFiles, vector<string>& testFiles)
 	{
 		LOG() << "=== Loading Dataset ===" << endl;
 
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
 		LOG() << endl << "Reading from " << trainSplitFile << "..." << endl;
-		vector<string> trainFiles = readSplitsFile(trainSplitFile);
-		loadDatasetHelper(trainFiles, XTrain, YTrain);
+		trainFiles = readSplitsFile(trainSplitFile);
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
 		LOG() << endl << "Reading from " << validSplitFile << "..." << endl;
-		vector<string> validFiles = readSplitsFile(validSplitFile);
-		loadDatasetHelper(validFiles, XValidation, YValidation);
+		validationFiles = readSplitsFile(validSplitFile);
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
 		LOG() << endl << "Reading from " << testSplitFile << "..." << endl;
-		vector<string> testFiles = readSplitsFile(testSplitFile);
-		loadDatasetHelper(testFiles, XTest, YTest);
+		testFiles = readSplitsFile(testSplitFile);
 
 		LOG() << endl;
 	}
 
-	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
+	void Dataset::loadImage(string fileName, ImgFeatures*& X, ImgLabeling*& Y)
 	{
-		for (vector< ImgFeatures* >::iterator it = XTrain.begin(); it != XTrain.end(); ++it)
-		{
-			ImgFeatures* object = *it;
-			delete object;
-		}
-		XTrain.clear();
-		for (vector< ImgLabeling* >::iterator it = YTrain.begin(); it != YTrain.end(); ++it)
-		{
-			ImgLabeling* object = *it;
-			delete object;
-		}
-		YTrain.clear();
-		for (vector< ImgFeatures* >::iterator it = XValidation.begin(); it != XValidation.end(); ++it)
-		{
-			ImgFeatures* object = *it;
-			delete object;
-		}
-		XValidation.clear();
-		for (vector< ImgLabeling* >::iterator it = YValidation.begin(); it != YValidation.end(); ++it)
-		{
-			ImgLabeling* object = *it;
-			delete object;
-		}
-		YValidation.clear();
-		for (vector< ImgFeatures* >::iterator it = XTest.begin(); it != XTest.end(); ++it)
-		{
-			ImgFeatures* object = *it;
-			delete object;
-		}
-		XTest.clear();
-		for (vector< ImgLabeling* >::iterator it = YTest.begin(); it != YTest.end(); ++it)
-		{
-			ImgLabeling* object = *it;
-			delete object;
-		}
-		XTest.clear();
+		LOG() << "\tLoading " << fileName << "..." << endl;
+
+		// read meta file
+		string metaFile = Global::settings->paths->INPUT_META_DIR + fileName + ".txt";
+		int numNodes, numFeatures, height, width;
+		readMetaFile(metaFile, numNodes, numFeatures, height, width);
+
+		// read nodes file
+		string nodesFile = Global::settings->paths->INPUT_NODES_DIR + fileName + ".txt";
+		VectorXi labels = VectorXi::Zero(numNodes);
+		MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+		readNodesFile(nodesFile, labels, features);
+
+		// read node locations
+		string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + fileName + ".txt";
+		MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
+		VectorXd nodeWeights = VectorXd::Zero(numNodes);
+		readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
+
+		// read edges file
+		string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + fileName + ".txt";
+		AdjList_t edges;
+		map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+		readEdgesFile(edgesFile, edges, edgeWeights);
+
+		// read segments file
+		string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + fileName + ".txt";
+		MatrixXi segments = MatrixXi::Zero(height, width);
+		readSegmentsFile(segmentsFile, segments);
+
+		// construct ImgFeatures
+		FeatureGraph featureGraph;
+		featureGraph.adjList = edges;
+		featureGraph.nodesData = features;
+		X = new ImgFeatures();
+		X->graph = featureGraph;
+		X->filename = fileName;
+		X->segmentsAvailable = true;
+		X->segments = segments;
+		X->nodeLocationsAvailable = true;
+		X->nodeLocations = nodeLocations;
+		X->edgeWeightsAvailable = Global::settings->USE_EDGE_WEIGHTS;
+		X->edgeWeights = edgeWeights;
+
+		// construct ImgLabeling
+		LabelGraph labelGraph;
+		labelGraph.adjList = edges;
+		labelGraph.nodesData = labels;
+		Y = new ImgLabeling();
+		Y->graph = labelGraph;
+		Y->nodeWeightsAvailable = true;
+		Y->nodeWeights = nodeWeights;
+	}
+
+	void Dataset::unloadImage(ImgFeatures*& X, ImgLabeling*& Y)
+	{
+		delete X;
+		delete Y;
+		X = NULL;
+		Y = NULL;
 	}
 
 	void Dataset::computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end)
@@ -288,70 +305,6 @@ namespace HCSearch
 				start = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
 				end = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank+1 - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
 			}
-		}
-	}
-
-	void Dataset::loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet)
-	{
-		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
-		{
-			string filename = *it;
-			LOG() << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures, height, width;
-			readMetaFile(metaFile, numNodes, numFeatures, height, width);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read node locations
-			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
-			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
-			VectorXd nodeWeights = VectorXd::Zero(numNodes);
-			readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			map< MyPrimitives::Pair<int, int>, double > edgeWeights;
-			readEdgesFile(edgesFile, edges, edgeWeights);
-
-			// read segments file
-			string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + filename + ".txt";
-			MatrixXi segments = MatrixXi::Zero(height, width);
-			readSegmentsFile(segmentsFile, segments);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-			X->segmentsAvailable = true;
-			X->segments = segments;
-			X->nodeLocationsAvailable = true;
-			X->nodeLocations = nodeLocations;
-			X->edgeWeightsAvailable = Global::settings->USE_EDGE_WEIGHTS;
-			X->edgeWeights = edgeWeights;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			Y->nodeWeightsAvailable = true;
-			Y->nodeWeights = nodeWeights;
-			
-			// push into list
-			XSet.push_back(X);
-			YSet.push_back(Y);
 		}
 	}
 
@@ -781,8 +734,7 @@ namespace HCSearch
 
 	/**************** Learning ****************/
 
-	IRankModel* Learning::learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+	IRankModel* Learning::learnH(vector<string>& trainFiles, vector<string>& validFiles,
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		clock_t tic = clock();
@@ -794,13 +746,13 @@ namespace HCSearch
 
 		// Learn on each training example
 		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
 
 				//if (rankerType == VW_RANK)
 					//Training::restartLearning(learningModel, LEARN_H);
@@ -808,11 +760,17 @@ namespace HCSearch
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
+				meta.exampleName = trainFiles[i];
 				meta.iter = iter;
 
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
 				// run search
-				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, NULL, meta);
+				searchProcedure->performSearch(LEARN_H, *XTrainObj, YTrainObj, timeBound, searchSpace, learningModel, NULL, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_H);
@@ -829,8 +787,7 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	IRankModel* Learning::learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+	IRankModel* Learning::learnC(vector<string>& trainFiles, vector<string>& validFiles,
 		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		clock_t tic = clock();
@@ -842,13 +799,13 @@ namespace HCSearch
 
 		// Learn on each training example
 		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
 
 				//if (rankerType == VW_RANK)
 					//Training::restartLearning(learningModel, LEARN_C);
@@ -856,11 +813,17 @@ namespace HCSearch
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
+				meta.exampleName = trainFiles[i];
 				meta.iter = iter;
 
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
 				// run search
-				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
+				searchProcedure->performSearch(LEARN_C, *XTrainObj, YTrainObj, timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_C);
@@ -877,8 +840,7 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	IRankModel* Learning::learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+	IRankModel* Learning::learnCWithOracleH(vector<string>& trainFiles, vector<string>& validFiles,
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		clock_t tic = clock();
@@ -890,13 +852,13 @@ namespace HCSearch
 
 		// Learn on each training example
 		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
 
 				//if (rankerType == VW_RANK)
 					//Training::restartLearning(learningModel, LEARN_C_ORACLE_H);
@@ -904,11 +866,17 @@ namespace HCSearch
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
+				meta.exampleName = trainFiles[i];
 				meta.iter = iter;
 
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
 				// run search
-				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, NULL, meta);
+				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, learningModel, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
@@ -925,8 +893,7 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	IRankModel* Learning::learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+	IRankModel* Learning::learnP(vector<string>& trainFiles, vector<string>& validFiles,
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		clock_t tic = clock();
@@ -938,13 +905,13 @@ namespace HCSearch
 
 		// Learn on each training example
 		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
 
 				//if (rankerType == VW_RANK)
 					//Training::restartLearning(learningModel, LEARN_PRUNE);
@@ -952,11 +919,17 @@ namespace HCSearch
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
+				meta.exampleName = trainFiles[i];
 				meta.iter = iter;
 
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
 				// run search
-				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
+				searchProcedure->performSearch(LEARN_PRUNE, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, NULL, learningModel, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
 
 				//if (rankerType == VW_RANK)
 					//Training::finishLearning(learningModel, LEARN_PRUNE);
@@ -973,7 +946,7 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	map<string, int> Learning::discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain)
+	map<string, int> Learning::discoverPairwiseClassConstraints(vector<string>& trainFiles)
 	{
 		map<string, int> pairwiseConstraints;
 
@@ -983,15 +956,16 @@ namespace HCSearch
 
 		// Learn on each training example
 		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			LOG() << "Pairwise class constraint: processing on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+			LOG() << "Pairwise class constraint: processing on " << trainFiles[i] << " (example " << i << ")..." << endl;
 
 			// do stuff
-			ImgFeatures* X = XTrain[i];
-			ImgLabeling* Y = YTrain[i];
+			ImgFeatures* X = NULL;
+			ImgLabeling* Y = NULL;
+			Dataset::loadImage(trainFiles[i], X, Y);
 			
 			const int numNodes = X->getNumNodes();
 			for (int node1 = 0; node1 < numNodes; node1++)
@@ -1056,6 +1030,8 @@ namespace HCSearch
 					}
 				}
 			}
+
+			Dataset::unloadImage(X, Y);
 		}
 		
 		clock_t toc = clock();

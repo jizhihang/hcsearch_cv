@@ -135,6 +135,9 @@ namespace HCSearch
 
 		// output directories
 
+		string OUTPUT_PROGRESS_FILE;
+		string OUTPUT_PROGRESS_FILE_NAME;
+
 		string OUTPUT_LOGS_DIR;
 		string OUTPUT_MODELS_DIR;
 		string OUTPUT_RESULTS_DIR;
