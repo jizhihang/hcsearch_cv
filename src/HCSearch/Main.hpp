@@ -51,3 +51,7 @@ HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOption
  * @brief Convenience function to print useful info.
  */
 void printInfo(MyProgramOptions::ProgramOptions po);
+
+void getRunAllSchedule(vector< HCSearch::SearchType >& schedule);
+
+void writeProgressToFile(HCSearch::SearchType completedSearchType);

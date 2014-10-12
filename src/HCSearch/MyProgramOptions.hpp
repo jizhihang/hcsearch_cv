@@ -56,6 +56,7 @@ namespace MyProgramOptions
 		bool printUsageMode;
 		bool demoMode;
 		vector< HCSearch::SearchType > schedule;
+		bool runAll;
 
 		// options
 

@@ -83,7 +83,7 @@ using namespace std;
  * 
  * The HCSearchLib is a static library. You can build it and then link it to your C++ projects.
  * 
- * The following is a snippet of demo code using the API. 
+ * The following is a snippet of (OLD!) demo code using the API. 
  * It loads the dataset, learns the heuristic and cost models, and performs inference on the first test example.
  * 
  * @code{.cpp}
@@ -178,7 +178,7 @@ using namespace std;
  * 
  * @section util_sec Dataset and Model Utilities
  * 
- * 1. Use HCSearch::Dataset::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
+ * 1. (OLD) Use HCSearch::Dataset::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
  * Right before exiting the program, use HCSearch::Dataset::unloadDataset() to clean up dataset resources.
  * 
  * 2. To save a heuristic or cost model, use the HCSearch::Model::saveModel(). 
@@ -510,10 +510,13 @@ namespace HCSearch
 	 * @brief Provide utilities to load/unload datasets.
 	 *
 	 * - Use the Dataset::loadDataset() 
-	 * function to read in a preprocessed dataset. 
+	 * function to read in file names from dataset. 
 	 *
-	 * - Use the Dataset::unloadDataset() 
-	 * function to clean up dataset resources properly before exiting the program.
+	 * - Use the Dataset::loadImage() 
+	 * function to read in preprocessed data. 
+	 *
+	 * - Use the Dataset::unloadImage() 
+	 * function to clean up preprocessed data. 
 	 * @{
 	 */
 
@@ -524,31 +527,29 @@ namespace HCSearch
 	{
 	public:
 		/*!
-		 * Load preprocessed dataset. 
+		 * Load dataset file names.
 		 * Must call Utility::configure() first to set up dataset path.
-		 * @param[out] XTrain Vector of structured features for training
-		 * @param[out] YTrain Vector of structured labelings for training
-		 * @param[out] XValidation Vector of structured features for validation
-		 * @param[out] YValidation Vector of structured labelings for validation
-		 * @param[out] XTest Vector of structured features for test
-		 * @param[out] YTest Vector of structured labelings for test
+		 * @param[out] trainFiles Vector of training image file names
+		 * @param[out] validationFiles Vector of validation image file names
+		 * @param[out] testFiles Vector of test image file names
 		 */
-		static void loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+		static void loadDataset(vector<string>& trainFiles, vector<string>& validationFiles, vector<string>& testFiles);
 
 		/*!
-		 * Clean up dataset objects: delete and empty.
-		 * @param[out] XTrain Vector of structured features for training
-		 * @param[out] YTrain Vector of structured labelings for training
-		 * @param[out] XValidation Vector of structured features for validation
-		 * @param[out] YValidation Vector of structured labelings for validation
-		 * @param[out] XTest Vector of structured features for test
-		 * @param[out] YTest Vector of structured labelings for test
+		 * Load preprocessed dataset: only one image
+		 * Must call Utility::configure() first to set up dataset path.
+		 * @param[in]  fileName file name to load
+		 * @param[out] X structured features
+		 * @param[out] Y structured labeling
 		 */
-		static void unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+		static void loadImage(string fileName, ImgFeatures*& X, ImgLabeling*& Y);
+
+		/*!
+		 * Clean up dataset object
+		 * @param[out] X structured features
+		 * @param[out] Y structured labeling
+		 */
+		static void unloadImage(ImgFeatures*& X, ImgLabeling*& Y);
 
 		/*!
 		 * Computes the range of tasks for rank to perform. Used for scheduling parallel processes.
@@ -561,8 +562,6 @@ namespace HCSearch
 		static void computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end);
 
 	private:
-		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
-
 		/*!
 		 * Read split file (Train.txt, Validation.txt, Test.txt).
 		 * @param[in] filename Path to split file
@@ -683,10 +682,8 @@ namespace HCSearch
 		 * Learn heuristic function. 
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a heuristic model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -694,18 +691,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned heuristic model
 		 */
-		static IRankModel* learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnH(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given learned heuristic function. 
 		 * Given training data, validation data, time bound, search space, procedure and learned heuristic, 
 		 * learn a cost model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] heuristicModel Learned heuristic model
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
@@ -714,18 +708,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost model
 		 */
-		static IRankModel* learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnC(vector<string>& trainFiles, vector<string>& validFiles, 
 			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given oracle heuristic function.
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a cost model using an oracle H and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -733,18 +724,15 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost (using oracle H) model
 		 */
-		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnCWithOracleH(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn prune function.
 		 * Given training data, validation data, time bound, search space and procedure, 
 		 * learn a prune model and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] trainFiles Vector of training image file names
+		 * @param[in] validationFiles Vector of validation image file names
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
@@ -752,11 +740,10 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned prune model
 		 */
-		static IRankModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		static IRankModel* learnP(vector<string>& trainFiles, vector<string>& validFiles, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
-		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
+		static map<string, int> discoverPairwiseClassConstraints(vector<string>& trainFiles);
     };
 
 	/*! @} */
