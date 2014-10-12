@@ -211,6 +211,8 @@ namespace HCSearch
 
 		// output directories
 
+		OUTPUT_PROGRESS_FILE_NAME = "progress.txt";
+
 		OUTPUT_LOGS_FOLDER_NAME = "logs";
 		OUTPUT_MODELS_FOLDER_NAME = "models";
 		OUTPUT_RESULTS_FOLDER_NAME = "results";
@@ -306,6 +308,8 @@ namespace HCSearch
 	void Settings::refreshExperimentDirectories(string experimentDir)
 	{
 		this->paths->OUTPUT_DIR = experimentDir + this->paths->DIR_SEP;
+
+		this->paths->OUTPUT_PROGRESS_FILE = this->paths->OUTPUT_DIR + this->paths->OUTPUT_PROGRESS_FILE_NAME;
 
 		// experiment directories
 		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_LOGS_FOLDER_NAME + this->paths->DIR_SEP;
