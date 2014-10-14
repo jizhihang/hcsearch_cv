@@ -75,6 +75,11 @@ namespace MyProgramOptions
 
 		maxCuttingThreshold = 1.0;
 		minCuttingThreshold = 0.0;
+
+		heuristicModelFileName = "model_heuristic.txt";
+		costModelFileName = "model_cost.txt";
+		costOracleHModelFileName = "model_cost_oracleH.txt";
+		pruneModelFileName = "model_prune.txt";
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -118,6 +123,34 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					po.baseDir = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--hmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.heuristicModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--cmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.costModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--cohmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.costOracleHModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--pmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.pruneModelFileName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--splits-path") == 0)

@@ -43,6 +43,11 @@ int main(int argc, char* argv[])
 
 	HCSearch::Global::settings->USE_EDGE_WEIGHTS = po.useEdgeWeights;
 
+	HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE_NAME = po.heuristicModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE_NAME = po.costModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME = po.costOracleHModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE_NAME = po.pruneModelFileName;
+
 	HCSearch::Setup::configure(po.inputDir, po.outputDir, po.baseDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);
