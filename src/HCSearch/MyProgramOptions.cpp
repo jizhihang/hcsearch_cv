@@ -751,6 +751,10 @@ namespace MyProgramOptions
 		cerr << "\t--edge-clamp-negative-threshold arg\t" << ": edge clamp negative threshold" << endl;
 		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
 		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
+		cerr << "\t--hmodel-filename arg\t\t\t" << ": heuristic model file name" << endl;
+		cerr << "\t--cmodel-filename arg\t\t\t" << ": cost model file name" << endl;
+		cerr << "\t--cohmodel-filename arg\t\t\t" << ": cost oracle H model file name" << endl;
+		cerr << "\t--pmodel-filename arg\t\t\t" << ": prune model file name" << endl;
 		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-simple" << endl;
 		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
