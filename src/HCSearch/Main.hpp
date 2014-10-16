@@ -22,6 +22,17 @@ void demo(MyProgramOptions::ProgramOptions po);
  */
 void run(MyProgramOptions::ProgramOptions po);
 
+// master scheduler
+void runMaster(vector<string> commands, vector<string> messages);
+
+// slave for tasks
+void runSlave(vector<string> commands, vector<string> messages, 
+			  vector<string>& trainFiles, vector<string>& validationFiles, 
+			  vector<string>& testFiles, HCSearch::SearchSpace*& searchSpace, 
+			  HCSearch::ISearchProcedure*& searchProcedure, MyProgramOptions::ProgramOptions& po);
+
+void getImageIDAndIter(string message, int& imageID, int& iterID);
+
 /*!
  * @brief Helper function to set up search space.
  *

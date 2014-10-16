@@ -687,73 +687,39 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::LL:
 		{
-			LOG() << "=== Inference LL ===" << endl;
-
-			// run LL search on test examples
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
+			// set up commands
+			vector<string> commands;
+			vector<string> messages;
+			for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); it++)
 			{
+				string imageID = *it;
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					int iteration = iter;
 					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
+						iteration = po.uniqueIterId;
 
-					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+					stringstream ssMessage;
+					ssMessage << imageID << ":" << iteration;
 
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = testFiles[i];
-					meta.iter = iter;
-
-					HCSearch::ImgFeatures* XTestObj = NULL;
-					HCSearch::ImgLabeling* YTestObj = NULL;
-					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTestObj, YTestObj, 
-						timeBound, searchSpace, searchProcedure, meta);
-				
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
-					}
-
-					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
-
-					if (po.numTestIterations == 1)
-						break;
+					commands.push_back("INFERLL");
+					messages.push_back(ssMessage.str());
 				}
 			}
 
-#ifdef USE_MPI
-		EasyMPI::EasyMPI::synchronize("INFERLLSTART", "INFERLLEND");
-#endif
-
-			if (HCSearch::Global::settings->RANK == 0)
+			// schedule and perform tasks
+			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
+				runMaster(commands, messages);
 				writeProgressToFile(HCSearch::LL);
+			}
+			else
+			{
+				runSlave(commands, messages, trainFiles, validationFiles, testFiles, searchSpace, searchProcedure, po);
+				if (HCSearch::Global::settings->NUM_PROCESSES == 1)
+				{
+					writeProgressToFile(HCSearch::LL);
+				}
 			}
 
 			break;
@@ -1004,6 +970,128 @@ void run(MyProgramOptions::ProgramOptions po)
 
 	clock_t toc = clock();
 	LOG() << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+}
+
+void runMaster(vector<string> commands, vector<string> messages)
+{
+	EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
+}
+
+void runSlave(vector<string> commands, vector<string> messages, 
+			  vector<string>& trainFiles, vector<string>& validationFiles, 
+			  vector<string>& testFiles, HCSearch::SearchSpace*& searchSpace, 
+			  HCSearch::ISearchProcedure*& searchProcedure, MyProgramOptions::ProgramOptions& po)
+{
+	vector<string> commandSet = commands;
+	vector<string> messageSet = messages;
+
+	// loop to wait for tasks
+	while (true)
+	{
+		// wait for a task
+		std::string command;
+		std::string message;
+
+		// wait for task if more than one process
+		// otherwise if only one process, then perform task on master process
+		if (EasyMPI::EasyMPI::getNumProcesses() > 1)
+		{
+			EasyMPI::EasyMPI::slaveWaitForTasks(command, message);
+		}
+		else
+		{
+			if (commandSet.empty() || messageSet.empty())
+				break;
+
+			command = commandSet.back();
+			message = messageSet.back();
+			commandSet.pop_back();
+			messageSet.pop_back();
+		}
+
+		LOG(INFO) << "Got command '" << command << "' and message '" << message << "'";
+
+		// define branches here to perform task depending on command
+		if (command.compare("INFERLL") == 0)
+		{
+
+			LOG() << "=== Inference LL ===" << endl;
+
+			// Declare
+			int i; // image ID
+			int iter; // iteration ID
+			getImageIDAndIter(message, i, iter);
+
+			LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+
+			// setup meta
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = po.saveAnytimePredictions;
+			meta.setType = HCSearch::TEST;
+			meta.exampleName = testFiles[i];
+			meta.iter = iter;
+
+			HCSearch::ImgFeatures* XTestObj = NULL;
+			HCSearch::ImgLabeling* YTestObj = NULL;
+			HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
+			// inference
+			HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTestObj, YTestObj, 
+				po.timeBound, searchSpace, searchProcedure, meta);
+				
+			// save the prediction
+			stringstream ssPredictNodes;
+			ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+				<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+				<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+				<< "_time" << po.timeBound 
+					<< "_fold" << meta.iter 
+					<< "_" << meta.exampleName << ".txt";
+			HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+			// save the prediction mask
+			if (po.saveOutputMask)
+			{
+				stringstream ssPredictSegments;
+				ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << po.timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
+			}
+
+			HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
+
+			// declare finished
+			EasyMPI::EasyMPI::slaveFinishedTask();
+
+		}
+		else if (command.compare(EasyMPI::EasyMPI::MASTER_FINISH_MESSAGE) == 0)
+		{
+			LOG(INFO) << "Got the master finish command on process " << EasyMPI::EasyMPI::getProcessID()
+				<< ". Exiting slave loop...";
+
+			break;
+		}
+		else
+		{
+			LOG(WARNING) << "Invalid command: " << command;
+		}
+	}
+}
+
+void getImageIDAndIter(string message, int& imageID, int& iterID)
+{
+	string imageIDString;
+	string iterIDString;
+	stringstream ss(message);
+	getline(ss, imageIDString, ':');
+	getline(ss, iterIDString, ':');
+
+	imageID = atoi(imageIDString.c_str());
+	iterID = atoi(iterIDString.c_str());
 }
 
 void printInfo(MyProgramOptions::ProgramOptions po)
