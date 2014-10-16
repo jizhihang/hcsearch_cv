@@ -323,7 +323,7 @@ namespace HCSearch
 		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_TEMP_FOLDER_NAME + this->paths->DIR_SEP;
 
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_HEURISTIC_MODEL_FILE_NAME;
-		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_COST_H_MODEL_FILE;
+		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_COST_H_MODEL_FILE_NAME;
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME;
 		this->paths->OUTPUT_PRUNE_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_PRUNE_MODEL_FILE_NAME;
 
