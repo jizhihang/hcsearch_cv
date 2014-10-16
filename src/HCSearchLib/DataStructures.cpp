@@ -457,7 +457,7 @@ namespace HCSearch
 			featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
 		}
 
-		MPI::Synchronize::masterWait(STARTMSG);
+		EasyMPI::EasyMPI::masterWait(STARTMSG);
 
 		// merge step
 		if (Global::settings->RANK == 0)
@@ -488,7 +488,7 @@ namespace HCSearch
 		}
 
 #ifdef USE_MPI
-		MPI::Synchronize::slavesWait(ENDMSG);
+		EasyMPI::EasyMPI::slavesWait(ENDMSG);
 #endif
 
 		// no longer learning
@@ -942,7 +942,7 @@ namespace HCSearch
 		}
 		this->numLearn++;
 
-		MPI::Synchronize::masterWait(STARTMSG);
+		EasyMPI::EasyMPI::masterWait(STARTMSG);
 
 		// merge step
 		if (Global::settings->RANK == 0)
@@ -1054,7 +1054,7 @@ namespace HCSearch
 //		}
 
 #ifdef USE_MPI
-		MPI::Synchronize::slavesWait(ENDMSG);
+		EasyMPI::EasyMPI::slavesWait(ENDMSG);
 #endif
 
 		// no longer learning

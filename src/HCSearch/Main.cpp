@@ -553,8 +553,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete heuristicModel;
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNHSTART");
-		MPI::Synchronize::slavesWait("LEARNHEND");
+		EasyMPI::EasyMPI::synchronize("LEARNHSTART", "LEARNHEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)
@@ -586,8 +585,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costModel;
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNCSTART");
-		MPI::Synchronize::slavesWait("LEARNCEND");
+		EasyMPI::EasyMPI::synchronize("LEARNCSTART", "LEARNCEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)
@@ -617,8 +615,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costOracleHModel;
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNCOHSTART");
-		MPI::Synchronize::slavesWait("LEARNCOHEND");
+		EasyMPI::EasyMPI::synchronize("LEARNCOHSTART", "LEARNCOHEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)
@@ -660,8 +657,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNPSTART");
-		MPI::Synchronize::slavesWait("LEARNPEND");
+		EasyMPI::EasyMPI::synchronize("LEARNPSTART", "LEARNPEND");
 #endif
 
 			//if (HCSearch::Global::settings->RANK == 0)
@@ -684,8 +680,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("DISCOVERMUTEXSTART");
-		MPI::Synchronize::slavesWait("DISCOVERMUTEXEND");
+		EasyMPI::EasyMPI::synchronize("DISCOVERMUTEXSTART", "DISCOVERMUTEXEND");
 #endif
 
 			break;
@@ -753,8 +748,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERLLSTART");
-		MPI::Synchronize::slavesWait("INFERLLEND");
+		EasyMPI::EasyMPI::synchronize("INFERLLSTART", "INFERLLEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)
@@ -831,8 +825,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete heuristicModel;
 			
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERHLSTART");
-		MPI::Synchronize::slavesWait("INFERHLEND");
+		EasyMPI::EasyMPI::synchronize("INFERHLSTART", "INFERHLEND");
 #endif
 		
 			if (HCSearch::Global::settings->RANK == 0)
@@ -909,8 +902,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costModel;
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERLCSTART");
-		MPI::Synchronize::slavesWait("INFERLCEND");
+		EasyMPI::EasyMPI::synchronize("INFERLCSTART", "INFERLCEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)
@@ -989,8 +981,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costModel;
 
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERHCSTART");
-		MPI::Synchronize::slavesWait("INFERHCEND");
+		EasyMPI::EasyMPI::synchronize("INFERHCSTART", "INFERHCEND");
 #endif
 
 			if (HCSearch::Global::settings->RANK == 0)

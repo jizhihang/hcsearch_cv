@@ -65,8 +65,7 @@ namespace HCSearch
 	void Setup::finalize()
 	{
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("DONESTART");
-		MPI::Synchronize::slavesWait("DONEEND");
+		EasyMPI::EasyMPI::synchronize("DONESTART", "DONEEND");
 
 		finalizeHelper();
 
