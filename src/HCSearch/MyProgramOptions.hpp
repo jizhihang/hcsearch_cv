@@ -99,7 +99,13 @@ namespace MyProgramOptions
 		double maxCuttingThreshold;
 		double minCuttingThreshold;
 
+
 		bool useAllUCMLevels;
+		
+		string heuristicModelFileName;
+		string costModelFileName;
+		string costOracleHModelFileName;
+		string pruneModelFileName;
 
 	public:
 		ProgramOptions();
