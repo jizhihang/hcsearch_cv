@@ -1,5 +1,6 @@
 #include <iostream>
 #include "MyProgramOptions.hpp"
+#include "MyFileSystem.hpp"
 #include "../HCSearchLib/HCSearch.hpp"
 
 namespace MyProgramOptions
@@ -33,6 +34,7 @@ namespace MyProgramOptions
 		printUsageMode = false;
 		demoMode = false;
 		schedule = vector< HCSearch::SearchType >();
+		runAll = false;
 
 		// options
 
@@ -73,6 +75,11 @@ namespace MyProgramOptions
 
 		maxCuttingThreshold = 1.0;
 		minCuttingThreshold = 0.0;
+
+		heuristicModelFileName = "model_heuristic.txt";
+		costModelFileName = "model_cost.txt";
+		costOracleHModelFileName = "model_cost_oracleH.txt";
+		pruneModelFileName = "model_prune.txt";
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -116,6 +123,34 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					po.baseDir = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--hmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.heuristicModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--cmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.costModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--cohmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.costOracleHModelFileName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--pmodel-filename") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.pruneModelFileName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--splits-path") == 0)
@@ -194,6 +229,10 @@ namespace MyProgramOptions
 				{
 					po.tempFolderName = argv[i+1];
 				}
+			}
+			else if (strcmp(argv[i], "--runall") == 0)
+			{
+				po.runAll = true;
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
 			{
@@ -665,10 +704,12 @@ namespace MyProgramOptions
 		}
 
 		// demo mode if nothing specified or used --demo flag
-		if (po.schedule.empty() && !po.demoMode)
-			po.demoMode = true;
-		else if (po.demoMode)
+		if (po.demoMode)
 			po.schedule.clear();
+		else if (po.runAll)
+			po.schedule.clear();
+		else if (po.schedule.empty() && !po.demoMode)
+			po.demoMode = true;
 
 		return po;
 	}
@@ -682,6 +723,7 @@ namespace MyProgramOptions
 		cerr << "Main options:" << endl;
 		cerr << "\t--help\t\t" << ": produce help message" << endl;
 		cerr << "\t--demo\t\t" << ": run the demo program (ignores --learn and --infer)" << endl;
+		cerr << "\t--runall\t\t" << ": run all learning and inference (ignores --learn and --infer)" << endl;
 		cerr << "\t--learn arg\t" << ": learning" << endl;
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
@@ -709,6 +751,10 @@ namespace MyProgramOptions
 		cerr << "\t--edge-clamp-negative-threshold arg\t" << ": edge clamp negative threshold" << endl;
 		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
 		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
+		cerr << "\t--hmodel-filename arg\t\t\t" << ": heuristic model file name" << endl;
+		cerr << "\t--cmodel-filename arg\t\t\t" << ": cost model file name" << endl;
+		cerr << "\t--cohmodel-filename arg\t\t\t" << ": cost oracle H model file name" << endl;
+		cerr << "\t--pmodel-filename arg\t\t\t" << ": prune model file name" << endl;
 		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-simple" << endl;
 		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"

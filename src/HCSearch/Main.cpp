@@ -43,9 +43,18 @@ int main(int argc, char* argv[])
 
 	HCSearch::Global::settings->USE_EDGE_WEIGHTS = po.useEdgeWeights;
 
+	HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE_NAME = po.heuristicModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE_NAME = po.costModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME = po.costOracleHModelFileName;
+	HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE_NAME = po.pruneModelFileName;
+
 	HCSearch::Setup::configure(po.inputDir, po.outputDir, po.baseDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);
+
+	// run all schedule option
+	if (po.runAll)
+		getRunAllSchedule(po.schedule);
 
 	// print useful information
 	printInfo(po);
@@ -440,15 +449,12 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::RankerType rankerType = po.rankLearnerType;
 
 	// datasets
-	vector< HCSearch::ImgFeatures* > XTrain;
-	vector< HCSearch::ImgLabeling* > YTrain;
-	vector< HCSearch::ImgFeatures* > XValidation;
-	vector< HCSearch::ImgLabeling* > YValidation;
-	vector< HCSearch::ImgFeatures* > XTest;
-	vector< HCSearch::ImgLabeling* > YTest;
+	vector<string> trainFiles;
+	vector<string> validationFiles;
+	vector<string> testFiles;
 
 	// load dataset
-	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+	HCSearch::Dataset::loadDataset(trainFiles, validationFiles, testFiles);
 
 	// load search space functions and search space
 	HCSearch::SearchSpace* searchSpace = setupSearchSpace(po);
@@ -532,7 +538,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Learning H ===" << endl;
 
 			// learn heuristic, save heuristic model
-			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
+			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(trainFiles, validationFiles,
 				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -551,6 +557,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("LEARNHEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::LEARN_H);
+			}
+
 			break;
 		}
 		case HCSearch::LEARN_C:
@@ -559,7 +570,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			// load heuristic, learn cost, save cost model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
+			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(trainFiles, validationFiles,
 				heuristicModel, timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -579,6 +590,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("LEARNCEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::LEARN_C);
+			}
+
 			break;
 		}
 		case HCSearch::LEARN_C_ORACLE_H:
@@ -586,7 +602,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Learning C with Oracle H ===" << endl;
 
 			// learn cost, save cost model
-			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, 
+			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(trainFiles, validationFiles,
 				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -605,6 +621,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("LEARNCOHEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::LEARN_C_ORACLE_H);
+			}
+
 			break;
 		}
 		case HCSearch::LEARN_PRUNE:
@@ -614,7 +635,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// learn cost, save cost model
 			if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 			{
-				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
+				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(trainFiles, validationFiles,
 					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
 				
 				// set the prune function
@@ -643,6 +664,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("LEARNPEND");
 #endif
 
+			//if (HCSearch::Global::settings->RANK == 0)
+			//{
+			//	writeProgressToFile(HCSearch::LEARN_PRUNE);
+			//}
+
 			break;
 		}
 		case HCSearch::DISCOVER_PAIRWISE:
@@ -650,7 +676,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Discovering Mutex ===" << endl;
 
 			// discover mutex constraints
-			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(XTrain, YTrain);
+			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(trainFiles);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 			{
@@ -670,7 +696,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			// run LL search on test examples
 			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
@@ -679,17 +705,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = testFiles[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, meta);
 				
 					// save the prediction
@@ -712,8 +742,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -725,6 +757,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("INFERLLEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::LL);
+			}
+
 			break;
 		}
 		case HCSearch::HL:
@@ -735,7 +772,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 
 			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
@@ -744,17 +781,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = testFiles[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, heuristicModel, meta);
 				
 					// save the prediction
@@ -777,8 +818,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -791,7 +834,12 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::masterWait("INFERHLSTART");
 		MPI::Synchronize::slavesWait("INFERHLEND");
 #endif
-			
+		
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::HL);
+			}
+
 			break;
 		}
 		case HCSearch::LC:
@@ -802,7 +850,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
 
 			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
@@ -811,17 +859,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = testFiles[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, costModel, meta);
 				
 					// save the prediction
@@ -844,8 +896,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -859,6 +913,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("INFERLCEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::LC);
+			}
+
 			break;
 		}
 		case HCSearch::HC:
@@ -870,7 +929,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
 
 			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
@@ -879,17 +938,21 @@ void run(MyProgramOptions::ProgramOptions po)
 					if (po.numTestIterations == 1)
 						iter = po.uniqueIterId;
 
-					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
 					meta.saveAnytimePredictions = po.saveAnytimePredictions;
 					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
+					meta.exampleName = testFiles[i];
 					meta.iter = iter;
 
+					HCSearch::ImgFeatures* XTestObj = NULL;
+					HCSearch::ImgLabeling* YTestObj = NULL;
+					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTest[i], YTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTestObj, YTestObj, 
 						timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
 
 					// save the prediction
@@ -912,8 +975,10 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_time" << timeBound 
 								<< "_fold" << meta.iter 
 								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
 					}
+
+					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
 
 					if (po.numTestIterations == 1)
 						break;
@@ -928,6 +993,11 @@ void run(MyProgramOptions::ProgramOptions po)
 		MPI::Synchronize::slavesWait("INFERHCEND");
 #endif
 
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				writeProgressToFile(HCSearch::HC);
+			}
+
 			break;
 		}
 		default:
@@ -940,7 +1010,6 @@ void run(MyProgramOptions::ProgramOptions po)
 	// clean up
 	delete searchSpace;
 	delete searchProcedure;
-	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 
 	clock_t toc = clock();
 	LOG() << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -1038,5 +1107,130 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << "OUTPUT_INITFUNC_PREDICT_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE  << endl;
 
 		LOG() << endl;
+	}
+}
+
+void getRunAllSchedule(vector< HCSearch::SearchType >& schedule)
+{
+	//bool learnP = false;
+	bool learnH = false;
+	bool learnC = false;
+	bool learnCOH = false;
+	bool inferLL = false;
+	bool inferHL = false;
+	bool inferHC = false;
+	bool inferLC = false;
+
+	// read in file
+	if (MyFileSystem::FileSystem::checkFileExists(HCSearch::Global::settings->paths->OUTPUT_PROGRESS_FILE))
+	{
+		string line;
+		ifstream fh(HCSearch::Global::settings->paths->OUTPUT_PROGRESS_FILE.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				//if (line.compare("LEARNP") == 0)
+				//{
+				//	learnP = true;
+				//}
+				if (line.compare("LEARNH") == 0)
+				{
+					learnH = true;
+				}
+				else if (line.compare("LEARNC") == 0)
+				{
+					learnC = true;
+				}
+				else if (line.compare("LEARNCOH") == 0)
+				{
+					learnCOH = true;
+				}
+				else if (line.compare("INFERLL") == 0)
+				{
+					inferLL = true;
+				}
+				else if (line.compare("INFERHL") == 0)
+				{
+					inferHL = true;
+				}
+				else if (line.compare("INFERHC") == 0)
+				{
+					inferHC = true;
+				}
+				else if (line.compare("INFERLC") == 0)
+				{
+					inferLC = true;
+				}
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open progress file!";
+			abort();
+		}
+	}
+
+	// create schedule
+	//if (!learnP)
+	//	schedule.push_back(HCSearch::LEARN_PRUNE);
+	if (!learnH)
+		schedule.push_back(HCSearch::LEARN_H);
+	if (!learnC)
+		schedule.push_back(HCSearch::LEARN_C);
+	if (!learnCOH)
+		schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+	if (!inferLL)
+		schedule.push_back(HCSearch::LL);
+	if (!inferHL)
+		schedule.push_back(HCSearch::HL);
+	if (!inferHC)
+		schedule.push_back(HCSearch::HC);
+	if (!inferLC)
+		schedule.push_back(HCSearch::LC);
+}
+
+void writeProgressToFile(HCSearch::SearchType completedSearchType)
+{
+	ofstream fh(HCSearch::Global::settings->paths->OUTPUT_PROGRESS_FILE.c_str(), std::ios_base::app);
+	if (fh.is_open())
+	{
+		switch (completedSearchType)
+		{
+		//case HCSearch::LEARN_P:
+		//	fh << "LEARNP" << endl;
+		//	break;
+		case HCSearch::LEARN_H:
+			fh << "LEARNH" << endl;
+			break;
+		case HCSearch::LEARN_C:
+			fh << "LEARNC" << endl;
+			break;
+		case HCSearch::LEARN_C_ORACLE_H:
+			fh << "LEARNCOH" << endl;
+			break;
+		case HCSearch::LL:
+			fh << "INFERLL" << endl;
+			break;
+		case HCSearch::HL:
+			fh << "INFERHL" << endl;
+			break;
+		case HCSearch::HC:
+			fh << "INFERHC" << endl;
+			break;
+		case HCSearch::LC:
+			fh << "INFERLC" << endl;
+			break;
+		default:
+			LOG(ERROR) << "invalid search type for writing to progress file!";
+			abort();
+		}
+	}
+	else
+	{
+		LOG(ERROR) << "cannot open progress file!";
+		abort();
 	}
 }

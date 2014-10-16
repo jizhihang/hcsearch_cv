@@ -211,6 +211,8 @@ namespace HCSearch
 
 		// output directories
 
+		OUTPUT_PROGRESS_FILE_NAME = "progress.txt";
+
 		OUTPUT_LOGS_FOLDER_NAME = "logs";
 		OUTPUT_MODELS_FOLDER_NAME = "models";
 		OUTPUT_RESULTS_FOLDER_NAME = "results";
@@ -220,6 +222,11 @@ namespace HCSearch
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
 		OUTPUT_PRUNE_FEATURES_FILE_BASE = "prune_features";
+
+		OUTPUT_HEURISTIC_MODEL_FILE_NAME = "model_heuristic.txt";
+		OUTPUT_COST_H_MODEL_FILE_NAME = "model_cost.txt";
+		OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME = "model_cost_oracleH.txt";
+		OUTPUT_PRUNE_MODEL_FILE_NAME = "model_prune.txt";
 	}
 
 	Paths::~Paths()
@@ -307,16 +314,18 @@ namespace HCSearch
 	{
 		this->paths->OUTPUT_DIR = experimentDir + this->paths->DIR_SEP;
 
+		this->paths->OUTPUT_PROGRESS_FILE = this->paths->OUTPUT_DIR + this->paths->OUTPUT_PROGRESS_FILE_NAME;
+
 		// experiment directories
 		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_LOGS_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_MODELS_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_RESULTS_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_TEMP_FOLDER_NAME + this->paths->DIR_SEP;
 
-		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
-		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
-		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
-		this->paths->OUTPUT_PRUNE_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_prune.txt";
+		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_HEURISTIC_MODEL_FILE_NAME;
+		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_COST_H_MODEL_FILE_NAME;
+		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME;
+		this->paths->OUTPUT_PRUNE_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + this->paths->OUTPUT_PRUNE_MODEL_FILE_NAME;
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";

@@ -55,6 +55,7 @@ namespace MyProgramOptions
 		bool printUsageMode;
 		bool demoMode;
 		vector< HCSearch::SearchType > schedule;
+		bool runAll;
 
 		// options
 
@@ -96,6 +97,11 @@ namespace MyProgramOptions
 
 		double maxCuttingThreshold;
 		double minCuttingThreshold;
+
+		string heuristicModelFileName;
+		string costModelFileName;
+		string costOracleHModelFileName;
+		string pruneModelFileName;
 
 	public:
 		ProgramOptions();

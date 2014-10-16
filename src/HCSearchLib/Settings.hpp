@@ -135,6 +135,9 @@ namespace HCSearch
 
 		// output directories
 
+		string OUTPUT_PROGRESS_FILE;
+		string OUTPUT_PROGRESS_FILE_NAME;
+
 		string OUTPUT_LOGS_DIR;
 		string OUTPUT_MODELS_DIR;
 		string OUTPUT_RESULTS_DIR;
@@ -164,6 +167,11 @@ namespace HCSearch
 		string OUTPUT_COST_H_MODEL_FILE;
 		string OUTPUT_COST_ORACLE_H_MODEL_FILE;
 		string OUTPUT_PRUNE_MODEL_FILE;
+
+		string OUTPUT_HEURISTIC_MODEL_FILE_NAME;
+		string OUTPUT_COST_H_MODEL_FILE_NAME;
+		string OUTPUT_COST_ORACLE_H_MODEL_FILE_NAME;
+		string OUTPUT_PRUNE_MODEL_FILE_NAME;
 
 		string OUTPUT_LOG_FILE;
 
