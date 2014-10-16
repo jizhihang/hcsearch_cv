@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataStructures.hpp" />
+    <ClInclude Include="EasyMPI.h" />
     <ClInclude Include="FeatureFunction.hpp" />
     <ClInclude Include="Globals.hpp" />
     <ClInclude Include="HCSearch.hpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataStructures.cpp" />
+    <ClCompile Include="EasyMPI.cpp" />
     <ClCompile Include="FeatureFunction.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="HCSearch.cpp" />
