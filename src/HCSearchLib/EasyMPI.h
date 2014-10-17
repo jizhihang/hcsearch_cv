@@ -40,39 +40,7 @@ namespace EasyMPI
 		const static string MASTER_FINISH_MESSAGE; //!< Master finished message
 		const static string SLAVE_FINISH_MESSAGE; //!< Slave finished message
 
-	private:
-		static int processID; //!< Process ID
-		static int numProcesses; //!< Number of processes
-		static bool initialized; //!< Whether called MPI initialized
-		static MPI_Status* mpiStatus; //!< MPI Status object
-
 	public:
-		/*!
-		 * Initialize MPI. Must be called before anything else!
-		 */
-		//static void initialize(int argc, char* argv[]);
-		static void initialize(int rank, int size);
-
-		/*!
-		 * Abort program "cleanly."
-		 */
-		static void abortMPI(int errcode);
-
-		/*!
-		 * Get the process ID (rank).
-		 */
-		static int getProcessID();
-
-		/*!
-		 * Get the total number of processes.
-		 */
-		static int getNumProcesses();
-
-		/*!
-		 * Get the MPI status object.
-		 */
-		static MPI_Status* getMPIStatus();
-
 		/*!
 		 * Master process schedules tasks (command, message) to slaves.
 		 * Exits when all tasks have been completed.

@@ -4,65 +4,23 @@
 #include <sstream>
 #include <cstdlib>
 #include "MyLogger.hpp"
+#include "Globals.hpp"
 
 namespace EasyMPI
 {
+	using namespace HCSearch;
+
 	const int EasyMPI::MAX_MESSAGE_SIZE = 128;
 	const int EasyMPI::MAX_NUM_PROCESSES = 512;
 	const string EasyMPI::MASTER_FINISH_MESSAGE = "MASTERFINISHEDALLTASKS";
 	const string EasyMPI::SLAVE_FINISH_MESSAGE = "SLAVEFINISHEDTASK";
 
-	int EasyMPI::processID = -1;
-	int EasyMPI::numProcesses = 0;
-	bool EasyMPI::initialized = false;
-	MPI_Status* EasyMPI::mpiStatus = NULL;
-
-	void EasyMPI::initialize(int rank, int size)
-	{
-		// store
-		EasyMPI::processID = rank;
-		EasyMPI::numProcesses = size;
-		EasyMPI::mpiStatus = new MPI_Status();
-		EasyMPI::initialized = true;
-	}
-
-	void EasyMPI::abortMPI(int errcode)
-	{
-		if (EasyMPI::initialized)
-		{
-			const int numProcesses = getNumProcesses();
-			const int rank = getProcessID();
-			LOG(ERROR) << "Process [" << rank << "/" << numProcesses << "] called ABORT!" << endl;
-
-			MPI_Abort(MPI_COMM_WORLD, errcode);
-		}
-		else
-		{
-			exit(errcode);
-		}
-	}
-
-	int EasyMPI::getProcessID()
-	{
-		return EasyMPI::processID;
-	}
-
-	int EasyMPI::getNumProcesses()
-	{
-		return EasyMPI::numProcesses;
-	}
-
-	MPI_Status* EasyMPI::getMPIStatus()
-	{
-		return EasyMPI::mpiStatus;
-	}
-
 	void EasyMPI::masterScheduleTasks(vector<string> commands, vector<string> messages)
 	{
 		char recvbuff[MAX_MESSAGE_SIZE];
 		const int numTasks = commands.size();
-		const int numProcesses = getNumProcesses();
-		const int rank = getProcessID();
+		const int numProcesses = Global::settings->NUM_PROCESSES;
+		const int rank = Global::settings->RANK;
 
 		if (numProcesses == 1)
 		{
@@ -73,7 +31,7 @@ namespace EasyMPI
 		if (commands.size() != messages.size())
 		{
 			LOG(ERROR) << "Commands size does not equal messages size." << endl;
-			abortMPI(1);
+			abort(1);
 		}
 
 		if (numTasks == 0)
@@ -129,18 +87,18 @@ namespace EasyMPI
 			while (true)
 			{
 				int msgFlag = 0;
-				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, EasyMPI::mpiStatus);
+				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, Global::settings->MPI_STATUS);
 
 				// if a messsage is available
 				if (msgFlag)
 				{
 					// get the message tag and especially the source
-					int messageID = (*EasyMPI::mpiStatus).MPI_TAG;
-					int messageSource = (*EasyMPI::mpiStatus).MPI_SOURCE;
+					int messageID = (*Global::settings->MPI_STATUS).MPI_TAG;
+					int messageSource = (*Global::settings->MPI_STATUS).MPI_SOURCE;
 					LOG(INFO) << "A message from process [" << messageSource << "/" << numProcesses << "].";
 
 					// receive the message into the buffer and check if it is the correct (slave finish) command
-					int ierr = MPI_Recv(recvbuff, MAX_MESSAGE_SIZE, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, EasyMPI::mpiStatus);
+					int ierr = MPI_Recv(recvbuff, MAX_MESSAGE_SIZE, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
 				
 					// process full message into command and message components
 					string fullMessage = recvbuff;
@@ -172,7 +130,7 @@ namespace EasyMPI
 						if (taskID < 0 || taskID >= numTasks)
 						{
 							LOG(ERROR) << "Task ID '" << taskID << "' gotten is invalid!";
-							abortMPI(1);
+							abort(1);
 						}
 
 						// update state
@@ -225,7 +183,7 @@ namespace EasyMPI
 		}
 
 		// everything finished, so send finish command to all slaves
-		for (int slaveID = 1; slaveID < getNumProcesses(); slaveID++)
+		for (int slaveID = 1; slaveID < numProcesses; slaveID++)
 		{
 			LOG(INFO) << "Master is telling slave [" << slaveID << "/" << numProcesses << "] that all tasks are done.";
 			string fullMessage = constructFullMessage(MASTER_FINISH_MESSAGE, "");
@@ -236,8 +194,8 @@ namespace EasyMPI
 
 	void EasyMPI::slaveWaitForTasks(string& command, string& message)
 	{
-		const int numProcesses = getNumProcesses();
-		const int rank = getProcessID();
+		const int numProcesses = Global::settings->NUM_PROCESSES;
+		const int rank = Global::settings->RANK;
 		
 		if (numProcesses == 1)
 			return;
@@ -249,7 +207,7 @@ namespace EasyMPI
 		while (true)
 		{
 			// wait for message from master
-			int ierr = MPI_Recv(recvbuff, MAX_MESSAGE_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD, EasyMPI::mpiStatus);
+			int ierr = MPI_Recv(recvbuff, MAX_MESSAGE_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
 
 			// process full message into command and message components
 			string fullMessage = recvbuff;
@@ -267,8 +225,8 @@ namespace EasyMPI
 
 	void EasyMPI::slaveFinishedTask()
 	{
-		const int numProcesses = getNumProcesses();
-		const int rank = getProcessID();
+		const int numProcesses = Global::settings->NUM_PROCESSES;
+		const int rank = Global::settings->RANK;
 
 		if (numProcesses == 1)
 			return;
@@ -294,8 +252,8 @@ namespace EasyMPI
 		const int SLAVEBROADCASTMSG_SIZE = slaveBroadcastMsg.length();
 	
 		// master needs to wait here until all slaves reaches here
-		const int numProcesses = getNumProcesses();
-		const int rank = getProcessID();
+		const int numProcesses = Global::settings->NUM_PROCESSES;
+		const int rank = Global::settings->RANK;
 		if (rank == 0)
 		{
 			LOG(INFO) << "Master process [" << rank << "/" << numProcesses << "] is waiting to get " << slaveBroadcastMsg << " message from all slaves...";
@@ -315,18 +273,18 @@ namespace EasyMPI
 					break;
 
 				int msgFlag = 0;
-				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, EasyMPI::mpiStatus);
+				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, Global::settings->MPI_STATUS);
 
 				// if a messsage is available
 				if (msgFlag)
 				{
 					// get the message tag and especially source
-					int messageID = (*EasyMPI::mpiStatus).MPI_TAG;
-					int messageSource = (*EasyMPI::mpiStatus).MPI_SOURCE;
+					int messageID = (*Global::settings->MPI_STATUS).MPI_TAG;
+					int messageSource = (*Global::settings->MPI_STATUS).MPI_SOURCE;
 					LOG(INFO) << "A message from process [" << messageSource << "/" << numProcesses << "].";
 
 					// receive the message into the buffer and check if it is the correct command
-					int ierr = MPI_Recv(recvbuff, SLAVEBROADCASTMSG_SIZE, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, EasyMPI::mpiStatus);
+					int ierr = MPI_Recv(recvbuff, SLAVEBROADCASTMSG_SIZE, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
 					
 					// check if correct message
 					bool correctMessage = true;
@@ -386,8 +344,8 @@ namespace EasyMPI
 		const int MASTERBROADCASTMSG_SIZE = masterBroadcastMsg.length();
 
 		// slaves need to wait here until master reaches here
-		const int numProcesses = getNumProcesses();
-		const int rank = getProcessID();
+		const int numProcesses = Global::settings->NUM_PROCESSES;
+		const int rank = Global::settings->RANK;
 		if (rank == 0)
 		{
 			LOG(INFO) << "Master process [" << rank << "/" << numProcesses << "] is telling slave processes to continue...";
@@ -408,7 +366,7 @@ namespace EasyMPI
 			// now wait until master gives the continue signal
 			while (true)
 			{
-				int ierr = MPI_Recv(recvbuff, MASTERBROADCASTMSG_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD, EasyMPI::mpiStatus);
+				int ierr = MPI_Recv(recvbuff, MASTERBROADCASTMSG_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
 
 				// check if correct message
 				bool correctMessage = true;
@@ -441,13 +399,13 @@ namespace EasyMPI
 		if (foundSemicolon1 != std::string::npos)
 		{
 			LOG(ERROR) << "command cannot contain a semicolon!";
-			abortMPI(1);
+			abort(1);
 		}
 		size_t foundSemicolon2 = message.find(";");
 		if (foundSemicolon2 != std::string::npos)
 		{
 			LOG(ERROR) << "message cannot contain a semicolon!";
-			abortMPI(1);
+			abort(1);
 		}
 
 		// calculate size of full message
@@ -458,7 +416,7 @@ namespace EasyMPI
 		if (size > MAX_MESSAGE_SIZE)
 		{
 			LOG(ERROR) << "Message length exceeds max message size!" << endl;
-			abortMPI(1);
+			abort(1);
 		}
 
 		// convert size to string

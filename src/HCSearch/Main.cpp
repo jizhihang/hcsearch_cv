@@ -874,7 +874,7 @@ void runSlave(vector<string> commands, vector<string> messages,
 
 		// wait for task if more than one process
 		// otherwise if only one process, then perform task on master process
-		if (EasyMPI::EasyMPI::getNumProcesses() > 1)
+		if (HCSearch::Global::settings->NUM_PROCESSES > 1)
 		{
 			EasyMPI::EasyMPI::slaveWaitForTasks(command, message);
 		}
@@ -1135,7 +1135,7 @@ void runSlave(vector<string> commands, vector<string> messages,
 		}
 		else if (command.compare(EasyMPI::EasyMPI::MASTER_FINISH_MESSAGE) == 0)
 		{
-			LOG(INFO) << "Got the master finish command on process " << EasyMPI::EasyMPI::getProcessID()
+			LOG(INFO) << "Got the master finish command on process " << HCSearch::Global::settings->RANK
 				<< ". Exiting slave loop...";
 
 			break;
