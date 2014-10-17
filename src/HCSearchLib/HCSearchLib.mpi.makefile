@@ -32,14 +32,20 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
-	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
+Debug: create_folders gccDebug/DataStructures.o gccDebug/EasyMPI.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
+	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/EasyMPI.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Debug configuration...
 -include gccDebug/DataStructures.d
 gccDebug/DataStructures.o: DataStructures.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c DataStructures.cpp $(Debug_Include_Path) -o gccDebug/DataStructures.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM DataStructures.cpp $(Debug_Include_Path) > gccDebug/DataStructures.d
+
+# Compiles file EasyMPI.cpp for the Debug configuration...
+-include gccDebug/EasyMPI.d
+gccDebug/EasyMPI.o: EasyMPI.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c EasyMPI.cpp $(Debug_Include_Path) -o gccDebug/EasyMPI.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM EasyMPI.cpp $(Debug_Include_Path) > gccDebug/EasyMPI.d
 
 # Compiles file FeatureFunction.cpp for the Debug configuration...
 -include gccDebug/FeatureFunction.d
@@ -133,14 +139,20 @@ gccDebug/SuccessorFunction.o: SuccessorFunction.cpp
 
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
-	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
+Release: create_folders gccRelease/DataStructures.o gccRelease/EasyMPI.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
+	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/EasyMPI.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Release configuration...
 -include gccRelease/DataStructures.d
 gccRelease/DataStructures.o: DataStructures.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c DataStructures.cpp $(Release_Include_Path) -o gccRelease/DataStructures.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM DataStructures.cpp $(Release_Include_Path) > gccRelease/DataStructures.d
+
+# Compiles file EasyMPI.cpp for the Release configuration...
+-include gccRelease/EasyMPI.d
+gccRelease/EasyMPI.o: EasyMPI.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c EasyMPI.cpp $(Release_Include_Path) -o gccRelease/EasyMPI.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM EasyMPI.cpp $(Release_Include_Path) > gccRelease/EasyMPI.d
 
 # Compiles file FeatureFunction.cpp for the Release configuration...
 -include gccRelease/FeatureFunction.d

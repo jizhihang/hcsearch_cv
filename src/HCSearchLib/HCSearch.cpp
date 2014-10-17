@@ -65,8 +65,7 @@ namespace HCSearch
 	void Setup::finalize()
 	{
 #ifdef USE_MPI
-		MPI::Synchronize::masterWait("DONESTART");
-		MPI::Synchronize::slavesWait("DONEEND");
+		EasyMPI::EasyMPI::synchronize("DONESTART", "DONEEND");
 
 		finalizeHelper();
 
@@ -745,40 +744,33 @@ namespace HCSearch
 		IRankModel* learningModel = Training::initializeLearning(rankerType, LEARN_H);
 
 		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
+		// set up commands
+		vector<string> commands;
+		vector<string> messages;
+		for (int imageID = 0; imageID < static_cast<int>(trainFiles.size()); imageID++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+				stringstream ssMessage;
+				ssMessage << imageID << ":" << iter;
 
-				//if (rankerType == VW_RANK)
-					//Training::restartLearning(learningModel, LEARN_H);
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = trainFiles[i];
-				meta.iter = iter;
-
-				ImgFeatures* XTrainObj = NULL;
-				ImgLabeling* YTrainObj = NULL;
-				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-
-				// run search
-				searchProcedure->performSearch(LEARN_H, *XTrainObj, YTrainObj, timeBound, searchSpace, learningModel, NULL, NULL, meta);
-
-				Dataset::unloadImage(XTrainObj, YTrainObj);
-
-				//if (rankerType == VW_RANK)
-					//Training::finishLearning(learningModel, LEARN_H);
+				commands.push_back("LEARNH");
+				messages.push_back(ssMessage.str());
 			}
+		}
+
+		// schedule and perform tasks
+		if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
+		{
+			EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
+		}
+		else
+		{
+			runSlave(commands, messages, trainFiles, validFiles, timeBound, 
+				searchSpace, searchProcedure, learningModel, NULL);
 		}
 		
 		// Merge and learn step
-		//if (rankerType != VW_RANK)
 		Training::finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
@@ -798,40 +790,33 @@ namespace HCSearch
 		IRankModel* learningModel = Training::initializeLearning(rankerType, LEARN_C);
 
 		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
+		// set up commands
+		vector<string> commands;
+		vector<string> messages;
+		for (int imageID = 0; imageID < static_cast<int>(trainFiles.size()); imageID++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+				stringstream ssMessage;
+				ssMessage << imageID << ":" << iter;
 
-				//if (rankerType == VW_RANK)
-					//Training::restartLearning(learningModel, LEARN_C);
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = trainFiles[i];
-				meta.iter = iter;
-
-				ImgFeatures* XTrainObj = NULL;
-				ImgLabeling* YTrainObj = NULL;
-				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-
-				// run search
-				searchProcedure->performSearch(LEARN_C, *XTrainObj, YTrainObj, timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
-
-				Dataset::unloadImage(XTrainObj, YTrainObj);
-
-				//if (rankerType == VW_RANK)
-					//Training::finishLearning(learningModel, LEARN_C);
+				commands.push_back("LEARNC");
+				messages.push_back(ssMessage.str());
 			}
+		}
+
+		// schedule and perform tasks
+		if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
+		{
+			EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
+		}
+		else
+		{
+			runSlave(commands, messages, trainFiles, validFiles, timeBound, 
+				searchSpace, searchProcedure, learningModel, heuristicModel);
 		}
 		
 		// Merge and learn step
-		//if (rankerType != VW_RANK)
 		Training::finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
@@ -851,40 +836,33 @@ namespace HCSearch
 		IRankModel* learningModel = Training::initializeLearning(rankerType, LEARN_C_ORACLE_H);
 
 		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
+		// set up commands
+		vector<string> commands;
+		vector<string> messages;
+		for (int imageID = 0; imageID < static_cast<int>(trainFiles.size()); imageID++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+				stringstream ssMessage;
+				ssMessage << imageID << ":" << iter;
 
-				//if (rankerType == VW_RANK)
-					//Training::restartLearning(learningModel, LEARN_C_ORACLE_H);
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = trainFiles[i];
-				meta.iter = iter;
-
-				ImgFeatures* XTrainObj = NULL;
-				ImgLabeling* YTrainObj = NULL;
-				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-
-				// run search
-				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, learningModel, NULL, meta);
-
-				Dataset::unloadImage(XTrainObj, YTrainObj);
-
-				//if (rankerType == VW_RANK)
-					//Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
+				commands.push_back("LEARNCOH");
+				messages.push_back(ssMessage.str());
 			}
+		}
+
+		// schedule and perform tasks
+		if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
+		{
+			EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
+		}
+		else
+		{
+			runSlave(commands, messages, trainFiles, validFiles, timeBound, 
+				searchSpace, searchProcedure, learningModel, NULL);
 		}
 		
 		// Merge and learn step
-		//if (rankerType != VW_RANK)
 		Training::finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
@@ -904,40 +882,33 @@ namespace HCSearch
 		IRankModel* learningModel = Training::initializeLearning(rankerType, LEARN_PRUNE);
 
 		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, trainFiles.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
+		// set up commands
+		vector<string> commands;
+		vector<string> messages;
+		for (int imageID = 0; imageID < static_cast<int>(trainFiles.size()); imageID++)
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+				stringstream ssMessage;
+				ssMessage << imageID << ":" << iter;
 
-				//if (rankerType == VW_RANK)
-					//Training::restartLearning(learningModel, LEARN_PRUNE);
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = trainFiles[i];
-				meta.iter = iter;
-
-				ImgFeatures* XTrainObj = NULL;
-				ImgLabeling* YTrainObj = NULL;
-				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
-
-				// run search
-				searchProcedure->performSearch(LEARN_PRUNE, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, NULL, learningModel, meta);
-
-				Dataset::unloadImage(XTrainObj, YTrainObj);
-
-				//if (rankerType == VW_RANK)
-					//Training::finishLearning(learningModel, LEARN_PRUNE);
+				commands.push_back("LEARNP");
+				messages.push_back(ssMessage.str());
 			}
+		}
+
+		// schedule and perform tasks
+		if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
+		{
+			EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
+		}
+		else
+		{
+			runSlave(commands, messages, trainFiles, validFiles, timeBound, 
+				searchSpace, searchProcedure, learningModel, NULL);
 		}
 		
 		// Merge and learn step
-		//if (rankerType != VW_RANK)
 		Training::finishLearning(learningModel, LEARN_PRUNE);
 
 		clock_t toc = clock();
@@ -1038,6 +1009,183 @@ namespace HCSearch
 		LOG() << "total discoverPairwiseClassConstraints time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return pairwiseConstraints;
+	}
+
+	void Learning::runSlave(vector<string> commands, vector<string> messages,
+			vector<string>& trainFiles, vector<string>& validFiles,
+			int timeBound, SearchSpace*& searchSpace, ISearchProcedure*& searchProcedure,
+			IRankModel*& learningModel, IRankModel* heuristicModel)
+	{
+		vector<string> commandSet = commands;
+		vector<string> messageSet = messages;
+
+		// loop to wait for tasks
+		while (true)
+		{
+			// wait for a task
+			std::string command;
+			std::string message;
+
+			// wait for task if more than one process
+			// otherwise if only one process, then perform task on master process
+			if (HCSearch::Global::settings->NUM_PROCESSES > 1)
+			{
+				EasyMPI::EasyMPI::slaveWaitForTasks(command, message);
+			}
+			else
+			{
+				if (commandSet.empty() || messageSet.empty())
+					break;
+
+				command = commandSet.back();
+				message = messageSet.back();
+				commandSet.pop_back();
+				messageSet.pop_back();
+			}
+
+			LOG(INFO) << "Got command '" << command << "' and message '" << message << "'";
+
+			// define branches here to perform task depending on command
+			if (command.compare("LEARNH") == 0)
+			{
+
+				// Declare
+				int i; // image ID
+				int iter; // iteration ID
+				getImageIDAndIter(message, i, iter);
+
+				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = trainFiles[i];
+				meta.iter = iter;
+
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
+				// run search
+				searchProcedure->performSearch(LEARN_H, *XTrainObj, YTrainObj, timeBound, searchSpace, learningModel, NULL, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
+
+				// declare finished
+				EasyMPI::EasyMPI::slaveFinishedTask();
+
+			}
+			else if (command.compare("LEARNC") == 0)
+			{
+
+				// Declare
+				int i; // image ID
+				int iter; // iteration ID
+				getImageIDAndIter(message, i, iter);
+
+				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = trainFiles[i];
+				meta.iter = iter;
+
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
+				// run search
+				searchProcedure->performSearch(LEARN_C, *XTrainObj, YTrainObj, timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
+
+				// declare finished
+				EasyMPI::EasyMPI::slaveFinishedTask();
+
+			}
+			else if (command.compare("LEARNCOH") == 0)
+			{
+
+				// Declare
+				int i; // image ID
+				int iter; // iteration ID
+				getImageIDAndIter(message, i, iter);
+
+				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = trainFiles[i];
+				meta.iter = iter;
+
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
+				// run search
+				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, learningModel, NULL, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
+
+				// declare finished
+				EasyMPI::EasyMPI::slaveFinishedTask();
+
+			}
+			else if (command.compare("LEARNP") == 0)
+			{
+
+				// Declare
+				int i; // image ID
+				int iter; // iteration ID
+				getImageIDAndIter(message, i, iter);
+
+				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << trainFiles[i] << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = trainFiles[i];
+				meta.iter = iter;
+
+				ImgFeatures* XTrainObj = NULL;
+				ImgLabeling* YTrainObj = NULL;
+				Dataset::loadImage(trainFiles[i], XTrainObj, YTrainObj);
+
+				// run search
+				searchProcedure->performSearch(LEARN_PRUNE, *XTrainObj, YTrainObj, timeBound, searchSpace, NULL, NULL, learningModel, meta);
+
+				Dataset::unloadImage(XTrainObj, YTrainObj);
+
+				// declare finished
+				EasyMPI::EasyMPI::slaveFinishedTask();
+
+			}
+			else if (command.compare(EasyMPI::EasyMPI::MASTER_FINISH_MESSAGE) == 0)
+			{
+				LOG(INFO) << "Got the master finish command on process " << HCSearch::Global::settings->RANK
+					<< ". Exiting slave loop...";
+
+				break;
+			}
+			else
+			{
+				LOG(WARNING) << "Invalid command: " << command;
+			}
+		}
+	}
+
+	void Learning::getImageIDAndIter(string message, int& imageID, int& iterID)
+	{
+		string imageIDString;
+		string iterIDString;
+		stringstream ss(message);
+		getline(ss, imageIDString, ':');
+		getline(ss, iterIDString, ':');
+
+		imageID = atoi(imageIDString.c_str());
+		iterID = atoi(iterIDString.c_str());
 	}
 
 	/**************** Inference ****************/
