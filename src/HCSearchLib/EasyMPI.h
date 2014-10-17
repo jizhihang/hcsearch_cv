@@ -21,11 +21,6 @@ namespace EasyMPI
 	 *	slaveWaitForTasks()
 	 *	slaveFinishedTask()
 	 *
-	 *	initialize()
-	 *
-	 *	getProcessID()
-	 *	getNumProcesses()
-	 *
 	 * Note that if the number of processes is 1, then this architecture fails.
 	 * Simply have logic to perform tasks with only one process.
 	 *
