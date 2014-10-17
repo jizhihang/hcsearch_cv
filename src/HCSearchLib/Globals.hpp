@@ -6,7 +6,7 @@
 #include "mtrand.h"
 
 #ifdef USE_MPI
-#include "MPI.hpp"
+#include "EasyMPI.h"
 #endif
 
 namespace HCSearch

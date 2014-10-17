@@ -13,15 +13,11 @@ namespace HCSearch
 
 	LogRegInit::LogRegInit()
 	{
-#ifdef USE_MPI
-		MPI::Synchronize::masterWait("INITPREDSTART");
-#endif
-
 		if (Global::settings->RANK == 0)
 			trainClassifier();
 
 #ifdef USE_MPI
-		MPI::Synchronize::slavesWait("INITPREDEND");
+		EasyMPI::EasyMPI::synchronize("INITPREDSTART", "INITPREDEND");
 #endif
 	}
 

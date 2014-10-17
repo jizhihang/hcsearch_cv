@@ -744,6 +744,15 @@ namespace HCSearch
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		static map<string, int> discoverPairwiseClassConstraints(vector<string>& trainFiles);
+
+		// slave for learning tasks
+		static void runSlave(vector<string> commands, vector<string> messages,
+			vector<string>& trainFiles, vector<string>& validFiles,
+			int timeBound, SearchSpace*& searchSpace, ISearchProcedure*& searchProcedure,
+			IRankModel*& learningModel, IRankModel* heuristicModel);
+
+	private:
+		static void getImageIDAndIter(string message, int& imageID, int& iterID);
     };
 
 	/*! @} */
