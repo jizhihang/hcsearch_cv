@@ -22,7 +22,6 @@ namespace EasyMPI
 	 *	slaveFinishedTask()
 	 *
 	 *	initialize()
-	 *	finalize()
 	 *
 	 *	getProcessID()
 	 *	getNumProcesses()
@@ -45,20 +44,15 @@ namespace EasyMPI
 		static int processID; //!< Process ID
 		static int numProcesses; //!< Number of processes
 		static bool initialized; //!< Whether called MPI initialized
-		static bool finalized; //!< Whether called MPI finalized
 		static MPI_Status* mpiStatus; //!< MPI Status object
 
 	public:
 		/*!
 		 * Initialize MPI. Must be called before anything else!
 		 */
-		static void initialize(int argc, char* argv[]);
+		//static void initialize(int argc, char* argv[]);
+		static void initialize(int rank, int size);
 
-		/*!
-		 * Finalize MPI. Must be called before exiting the program!
-		 */
-		static void finalize();
-		
 		/*!
 		 * Abort program "cleanly."
 		 */

@@ -14,38 +14,15 @@ namespace EasyMPI
 	int EasyMPI::processID = -1;
 	int EasyMPI::numProcesses = 0;
 	bool EasyMPI::initialized = false;
-	bool EasyMPI::finalized = false;
 	MPI_Status* EasyMPI::mpiStatus = NULL;
 
-	void EasyMPI::initialize(int argc, char* argv[])
+	void EasyMPI::initialize(int rank, int size)
 	{
-		// initialize MPI
-		int rank, size;
-		int rc = MPI_Init(&argc, &argv);
-		if (rc != MPI_SUCCESS)
-		{
-			cerr << "Error starting MPI program. Terminating.";
-			abortMPI(1);
-		}
-
-		// get size and rank
-		MPI_Comm_size(MPI_COMM_WORLD, &size);
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
 		// store
 		EasyMPI::processID = rank;
 		EasyMPI::numProcesses = size;
 		EasyMPI::mpiStatus = new MPI_Status();
 		EasyMPI::initialized = true;
-	}
-
-	void EasyMPI::finalize()
-	{
-		// synchronize
-		//synchronize("FINALSLAVEMSG", "FINALMASTERMSG");
-
-		MPI_Finalize();
-		EasyMPI::finalized = true;
 	}
 
 	void EasyMPI::abortMPI(int errcode)
