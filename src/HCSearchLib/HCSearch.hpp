@@ -749,7 +749,7 @@ namespace HCSearch
 		static void runSlave(vector<string> commands, vector<string> messages,
 			vector<string>& trainFiles, vector<string>& validFiles,
 			int timeBound, SearchSpace*& searchSpace, ISearchProcedure*& searchProcedure,
-			IRankModel*& learningModel);
+			IRankModel*& learningModel, IRankModel* heuristicModel);
 
 	private:
 		static void getImageIDAndIter(string message, int& imageID, int& iterID);
