@@ -725,233 +725,114 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::HL:
 		{
-			LOG() << "=== Inference HL ===" << endl;
-
-			// load heuristic, run HL search on test examples
-			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
+			// set up commands
+			vector<string> commands;
+			vector<string> messages;
+			for (int imageID = 0; imageID < static_cast<int>(testFiles.size()); imageID++)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					int iteration = iter;
 					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
+						iteration = po.uniqueIterId;
 
-					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+					stringstream ssMessage;
+					ssMessage << imageID << ":" << iteration;
 
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = testFiles[i];
-					meta.iter = iter;
-
-					HCSearch::ImgFeatures* XTestObj = NULL;
-					HCSearch::ImgLabeling* YTestObj = NULL;
-					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTestObj, YTestObj, 
-						timeBound, searchSpace, searchProcedure, heuristicModel, meta);
-				
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
-					}
-
-					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
-
-					if (po.numTestIterations == 1)
-						break;
+					commands.push_back("INFERHL");
+					messages.push_back(ssMessage.str());
 				}
 			}
 
-			delete heuristicModel;
-			
-#ifdef USE_MPI
-		EasyMPI::EasyMPI::synchronize("INFERHLSTART", "INFERHLEND");
-#endif
-		
-			if (HCSearch::Global::settings->RANK == 0)
+			// schedule and perform tasks
+			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
+				runMaster(commands, messages);
 				writeProgressToFile(HCSearch::HL);
+			}
+			else
+			{
+				runSlave(commands, messages, trainFiles, validationFiles, testFiles, searchSpace, searchProcedure, po);
+				if (HCSearch::Global::settings->NUM_PROCESSES == 1)
+				{
+					writeProgressToFile(HCSearch::HL);
+				}
 			}
 
 			break;
 		}
 		case HCSearch::LC:
 		{
-			LOG() << "=== Inference LC ===" << endl;
-
-			// load cost oracle H, run LC search on test examples
-			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
-
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
+			// set up commands
+			vector<string> commands;
+			vector<string> messages;
+			for (int imageID = 0; imageID < static_cast<int>(testFiles.size()); imageID++)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					int iteration = iter;
 					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
+						iteration = po.uniqueIterId;
 
-					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+					stringstream ssMessage;
+					ssMessage << imageID << ":" << iteration;
 
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = testFiles[i];
-					meta.iter = iter;
-
-					HCSearch::ImgFeatures* XTestObj = NULL;
-					HCSearch::ImgLabeling* YTestObj = NULL;
-					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTestObj, YTestObj, 
-						timeBound, searchSpace, searchProcedure, costModel, meta);
-				
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
-					}
-
-					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
-
-					if (po.numTestIterations == 1)
-						break;
+					commands.push_back("INFERLC");
+					messages.push_back(ssMessage.str());
 				}
 			}
 
-			delete costModel;
-
-#ifdef USE_MPI
-		EasyMPI::EasyMPI::synchronize("INFERLCSTART", "INFERLCEND");
-#endif
-
-			if (HCSearch::Global::settings->RANK == 0)
+			// schedule and perform tasks
+			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
+				runMaster(commands, messages);
 				writeProgressToFile(HCSearch::LC);
+			}
+			else
+			{
+				runSlave(commands, messages, trainFiles, validationFiles, testFiles, searchSpace, searchProcedure, po);
+				if (HCSearch::Global::settings->NUM_PROCESSES == 1)
+				{
+					writeProgressToFile(HCSearch::LC);
+				}
 			}
 
 			break;
 		}
 		case HCSearch::HC:
 		{
-			LOG() << "=== Inference HC ===" << endl;
-
-			// load heuristic and cost, run HC search on test examples
-			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
-
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, testFiles.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
+			// set up commands
+			vector<string> commands;
+			vector<string> messages;
+			for (int imageID = 0; imageID < static_cast<int>(testFiles.size()); imageID++)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					int iteration = iter;
 					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
+						iteration = po.uniqueIterId;
 
-					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+					stringstream ssMessage;
+					ssMessage << imageID << ":" << iteration;
 
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = testFiles[i];
-					meta.iter = iter;
-
-					HCSearch::ImgFeatures* XTestObj = NULL;
-					HCSearch::ImgLabeling* YTestObj = NULL;
-					HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTestObj, YTestObj, 
-						timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
-
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
-					}
-
-					HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
-
-					if (po.numTestIterations == 1)
-						break;
+					commands.push_back("INFERHC");
+					messages.push_back(ssMessage.str());
 				}
 			}
 
-			delete heuristicModel;
-			delete costModel;
-
-#ifdef USE_MPI
-		EasyMPI::EasyMPI::synchronize("INFERHCSTART", "INFERHCEND");
-#endif
-
-			if (HCSearch::Global::settings->RANK == 0)
+			// schedule and perform tasks
+			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
+				runMaster(commands, messages);
 				writeProgressToFile(HCSearch::HC);
+			}
+			else
+			{
+				runSlave(commands, messages, trainFiles, validationFiles, testFiles, searchSpace, searchProcedure, po);
+				if (HCSearch::Global::settings->NUM_PROCESSES == 1)
+				{
+					writeProgressToFile(HCSearch::HC);
+				}
 			}
 
 			break;
@@ -1062,6 +943,191 @@ void runSlave(vector<string> commands, vector<string> messages,
 			}
 
 			HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
+
+			// declare finished
+			EasyMPI::EasyMPI::slaveFinishedTask();
+
+		}
+		else if (command.compare("INFERHL") == 0)
+		{
+
+			LOG() << "=== Inference HL ===" << endl;
+
+			// load heuristic, run HL search on test examples
+			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, po.rankLearnerType);
+
+			// Declare
+			int i; // image ID
+			int iter; // iteration ID
+			getImageIDAndIter(message, i, iter);
+
+			LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+
+			// setup meta
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = po.saveAnytimePredictions;
+			meta.setType = HCSearch::TEST;
+			meta.exampleName = testFiles[i];
+			meta.iter = iter;
+
+			HCSearch::ImgFeatures* XTestObj = NULL;
+			HCSearch::ImgLabeling* YTestObj = NULL;
+			HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
+			// inference
+			HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTestObj, YTestObj, 
+				po.timeBound, searchSpace, searchProcedure, heuristicModel, meta);
+				
+			// save the prediction
+			stringstream ssPredictNodes;
+			ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+				<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
+				<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+				<< "_time" << po.timeBound 
+					<< "_fold" << meta.iter 
+					<< "_" << meta.exampleName << ".txt";
+			HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+			// save the prediction mask
+			if (po.saveOutputMask)
+			{
+				stringstream ssPredictSegments;
+				ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << po.timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
+			}
+
+			HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
+
+			delete heuristicModel;
+
+			// declare finished
+			EasyMPI::EasyMPI::slaveFinishedTask();
+
+		}
+		else if (command.compare("INFERLC") == 0)
+		{
+
+			LOG() << "=== Inference LC ===" << endl;
+
+			// load cost oracle H, run LC search on test examples
+			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, po.rankLearnerType);
+
+			// Declare
+			int i; // image ID
+			int iter; // iteration ID
+			getImageIDAndIter(message, i, iter);
+
+			LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+
+			// setup meta
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = po.saveAnytimePredictions;
+			meta.setType = HCSearch::TEST;
+			meta.exampleName = testFiles[i];
+			meta.iter = iter;
+
+			HCSearch::ImgFeatures* XTestObj = NULL;
+			HCSearch::ImgLabeling* YTestObj = NULL;
+			HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
+			// inference
+			HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTestObj, YTestObj, 
+				po.timeBound, searchSpace, searchProcedure, costModel, meta);
+				
+			// save the prediction
+			stringstream ssPredictNodes;
+			ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+				<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
+				<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+				<< "_time" << po.timeBound 
+					<< "_fold" << meta.iter 
+					<< "_" << meta.exampleName << ".txt";
+			HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+			// save the prediction mask
+			if (po.saveOutputMask)
+			{
+				stringstream ssPredictSegments;
+				ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << po.timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
+			}
+
+			HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
+
+			delete costModel;
+
+			// declare finished
+			EasyMPI::EasyMPI::slaveFinishedTask();
+
+		}
+		else if (command.compare("INFERHC") == 0)
+		{
+
+			LOG() << "=== Inference HC ===" << endl;
+
+			// load heuristic and cost, run HC search on test examples
+			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, po.rankLearnerType);
+			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, po.rankLearnerType);
+
+			// Declare
+			int i; // image ID
+			int iter; // iteration ID
+			getImageIDAndIter(message, i, iter);
+
+			LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << testFiles[i] << " (example " << i << ")..." << endl;
+
+			// setup meta
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = po.saveAnytimePredictions;
+			meta.setType = HCSearch::TEST;
+			meta.exampleName = testFiles[i];
+			meta.iter = iter;
+
+			HCSearch::ImgFeatures* XTestObj = NULL;
+			HCSearch::ImgLabeling* YTestObj = NULL;
+			HCSearch::Dataset::loadImage(testFiles[i], XTestObj, YTestObj);
+
+			// inference
+			HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTestObj, YTestObj, 
+				po.timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
+
+			// save the prediction
+			stringstream ssPredictNodes;
+			ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+				<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+				<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+				<< "_time" << po.timeBound 
+					<< "_fold" << meta.iter 
+					<< "_" << meta.exampleName << ".txt";
+			HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+			// save the prediction mask
+			if (po.saveOutputMask)
+			{
+				stringstream ssPredictSegments;
+				ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << po.timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabelMask(*XTestObj, YPred, ssPredictSegments.str());
+			}
+
+			HCSearch::Dataset::unloadImage(XTestObj, YTestObj);
+
+			delete heuristicModel;
+			delete costModel;
 
 			// declare finished
 			EasyMPI::EasyMPI::slaveFinishedTask();
