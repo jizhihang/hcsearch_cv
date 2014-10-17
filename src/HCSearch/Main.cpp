@@ -709,7 +709,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// schedule and perform tasks
 			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
-				runMaster(commands, messages);
+				EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
 				writeProgressToFile(HCSearch::LL);
 			}
 			else
@@ -747,7 +747,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// schedule and perform tasks
 			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
-				runMaster(commands, messages);
+				EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
 				writeProgressToFile(HCSearch::HL);
 			}
 			else
@@ -785,7 +785,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// schedule and perform tasks
 			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
-				runMaster(commands, messages);
+				EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
 				writeProgressToFile(HCSearch::LC);
 			}
 			else
@@ -823,7 +823,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			// schedule and perform tasks
 			if (HCSearch::Global::settings->RANK == 0 && HCSearch::Global::settings->NUM_PROCESSES > 1)
 			{
-				runMaster(commands, messages);
+				EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
 				writeProgressToFile(HCSearch::HC);
 			}
 			else
@@ -850,11 +850,6 @@ void run(MyProgramOptions::ProgramOptions po)
 
 	clock_t toc = clock();
 	LOG() << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
-}
-
-void runMaster(vector<string> commands, vector<string> messages)
-{
-	EasyMPI::EasyMPI::masterScheduleTasks(commands, messages);
 }
 
 void runSlave(vector<string> commands, vector<string> messages, 
