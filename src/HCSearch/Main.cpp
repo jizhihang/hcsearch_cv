@@ -690,9 +690,8 @@ void run(MyProgramOptions::ProgramOptions po)
 			// set up commands
 			vector<string> commands;
 			vector<string> messages;
-			for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); it++)
+			for (int imageID = 0; imageID < static_cast<int>(testFiles.size()); imageID++)
 			{
-				string imageID = *it;
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
 					int iteration = iter;
