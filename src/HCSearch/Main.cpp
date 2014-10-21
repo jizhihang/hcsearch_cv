@@ -136,11 +136,25 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		heuristicFeatFunc = new HCSearch::DenseCRFFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
-		LOG() << "standard CRF features" << endl;
+		LOG() << "standard simple CRF features" << endl;
 		LOG() << "\tlambda1=" << po.lambda1 << endl;
 		LOG() << "\tlambda2=" << po.lambda2 << endl;
 		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		heuristicFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_CONTEXT:
+		LOG() << "standard simple context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		heuristicFeatFunc = new HCSearch::StandardSimpleContextFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_ACTION_CONTEXT:
+		LOG() << "standard simple action context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		heuristicFeatFunc = new HCSearch::StandardSimpleManualContextFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";
@@ -191,11 +205,25 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		costFeatFunc = new HCSearch::DenseCRFFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
-		LOG() << "standard CRF features" << endl;
+		LOG() << "standard simple CRF features" << endl;
 		LOG() << "\tlambda1=" << po.lambda1 << endl;
 		LOG() << "\tlambda2=" << po.lambda2 << endl;
 		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		costFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_CONTEXT:
+		LOG() << "standard simple context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		costFeatFunc = new HCSearch::StandardSimpleContextFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_ACTION_CONTEXT:
+		LOG() << "standard simple action context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		costFeatFunc = new HCSearch::StandardSimpleManualContextFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";
@@ -250,11 +278,25 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		pruneFeatFunc = new HCSearch::StandardPruneFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE:
-		LOG() << "standard CRF features" << endl;
+		LOG() << "standard simple CRF features" << endl;
 		LOG() << "\tlambda1=" << po.lambda1 << endl;
 		LOG() << "\tlambda2=" << po.lambda2 << endl;
 		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		pruneFeatFunc = new HCSearch::StandardSimpleFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_CONTEXT:
+		LOG() << "standard simple context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		pruneFeatFunc = new HCSearch::StandardSimpleContextFeatures(po.lambda1, po.lambda2, po.lambda3);
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_SIMPLE_ACTION_CONTEXT:
+		LOG() << "standard simple action context CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
+		pruneFeatFunc = new HCSearch::StandardSimpleManualContextFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";

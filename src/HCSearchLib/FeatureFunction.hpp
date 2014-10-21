@@ -409,6 +409,77 @@ namespace HCSearch
 		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			int nodeLabel1, int nodeLabel2);
 	};
+
+	/*!
+	 * @brief Standard CRF features with raw unary and raw simpler pairwise potentials and pairwise context.
+	 */
+	class StandardSimpleContextFeatures : public IFeatureFunction
+	{
+	protected:
+		double lambda1;
+		double lambda2;
+		double lambda3;
+
+	public:
+		StandardSimpleContextFeatures();
+		StandardSimpleContextFeatures(double lambda1, double lambda2, double lambda3);
+		~StandardSimpleContextFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2);
+
+		/*!
+		 * @brief Compute context term.
+		 */
+		virtual VectorXd computeContextTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute context features.
+		 */
+		VectorXd computeContextFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+
+		VectorXd computeMutexTermManually(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+		VectorXd computeHoleTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+	};
+
+	/*!
+	 * @brief Standard CRF features with raw unary and raw simpler pairwise potentials and pairwise context for SBD with hole term.
+	 */
+	class StandardSimpleManualContextFeatures : public StandardSimpleContextFeatures
+	{
+	protected:
+		double lambda1;
+		double lambda2;
+		double lambda3;
+
+	public:
+		StandardSimpleManualContextFeatures();
+		StandardSimpleManualContextFeatures(double lambda1, double lambda2, double lambda3);
+		~StandardSimpleManualContextFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+	};
 }
 
 #endif
