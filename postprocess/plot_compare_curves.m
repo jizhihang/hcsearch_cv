@@ -111,7 +111,9 @@ if SHOW_PREC
     title(sprintf('%s: Precision vs. Time Bound', plotTitle));
     xlabel('Time Bound');
     ylabel('Precision');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -124,7 +126,9 @@ if SHOW_REC
     title(sprintf('%s: Recall vs. Time Bound', plotTitle));
     xlabel('Time Bound');
     ylabel('Recall');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -137,7 +141,9 @@ if SHOW_F1
     title(sprintf('%s: F1 vs. Time Bound', plotTitle));
     xlabel('Time Bound');
     ylabel('F1');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -150,9 +156,13 @@ if SHOW_ACC
     title(sprintf('%s: Hamming Accuracy vs. Time Bound', plotTitle));
     xlabel('Time Bound');
     ylabel('Hamming Accuracy');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
+
+prepare_plot_export();
 
 end
 
