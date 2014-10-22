@@ -104,7 +104,9 @@ if SHOW_PREC
     title('Precision vs. Time Bound');
     xlabel('Time Bound');
     ylabel('Precision');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -117,7 +119,9 @@ if SHOW_REC
     title('Recall vs. Time Bound');
     xlabel('Time Bound');
     ylabel('Recall');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -130,7 +134,9 @@ if SHOW_F1
     title('F1 vs. Time Bound');
     xlabel('Time Bound');
     ylabel('F1');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
 
@@ -143,9 +149,13 @@ if SHOW_ACC
     title('Hamming Accuracy vs. Time Bound');
     xlabel('Time Bound');
     ylabel('Hamming Accuracy');
-    legend(legendLabels);
+    legend(legendLabels, 'Location', 'best');
+    xlim([0 timeRange(end)]);
+    grid on;
     hold off;
 end
+
+prepare_plot_export();
 
 end
 

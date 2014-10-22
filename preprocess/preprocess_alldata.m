@@ -53,6 +53,9 @@ end
 if ~exist([outputPath filesep 'edgefeatures' filesep], 'dir')
     mkdir([outputPath filesep 'edgefeatures' filesep]);
 end
+if ~exist([outputPath filesep 'edgeweights' filesep], 'dir')
+    mkdir([outputPath filesep 'edgeweights' filesep]);
+end
 if ~exist([outputPath filesep 'segments' filesep], 'dir')
     mkdir([outputPath filesep 'segments' filesep]);
 end
@@ -148,6 +151,13 @@ for i = 1:nFiles
     [ai,aj,aval] = find(allData{i}.adj);
     spAdj = [ai,aj,aval];
     dlmwrite([outputPath filesep 'edges' filesep edgesFile], spAdj, ' ');
+    
+    % write UCM edge weights
+    if isfield(allData{i}, 'ucmAdj')
+        [bi,bj,baval] = find(allData{i}.ucmAdj);
+        bspAdj = [bi,bj,baval];
+        dlmwrite([outputPath filesep 'edgeweights' filesep edgesFile], bspAdj, ' ');
+    end
     
     % write edge features
     featDim = size(allData{i}.feat2, 2);

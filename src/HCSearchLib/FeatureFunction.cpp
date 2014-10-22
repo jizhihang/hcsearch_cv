@@ -1626,4 +1626,381 @@ namespace HCSearch
 		// assignment
 		return diffabs;
 	}
+
+	/**************** Standard Simpler Features with Context ****************/
+
+	StandardSimpleContextFeatures::StandardSimpleContextFeatures()
+	{
+		this->lambda1 = 1.0;
+		this->lambda2 = 1.0;
+		this->lambda3 = 1.0;
+	}
+
+	StandardSimpleContextFeatures::StandardSimpleContextFeatures(double lambda1, double lambda2, double lambda3)
+	{
+		this->lambda1 = lambda1;
+		this->lambda2 = lambda2;
+		this->lambda3 = lambda3;
+	}
+
+	StandardSimpleContextFeatures::~StandardSimpleContextFeatures()
+	{
+	}
+
+	RankFeatures StandardSimpleContextFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		int numConfigurations = 4;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
+		
+		VectorXd unaryTerm = lambda1 * computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = lambda2 * computePairwiseTerm(X, Y);
+		VectorXd contextTerm = computeContextTerm(X, Y);
+		//VectorXd contextTerm = computeMutexTermManually(X, Y, action);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, pairwiseFeatDim) = pairwiseTerm;
+		phi.segment(numClasses*unaryFeatDim + pairwiseFeatDim, numPairs*numConfigurations) = contextTerm;
+		//phi.segment(numClasses*unaryFeatDim + pairwiseFeatDim, 8) = contextTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardSimpleContextFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+		int numConfigurations = 4;
+
+		return numClasses*unaryFeatDim + pairwiseFeatDim + numPairs*numConfigurations;
+		//return numClasses*unaryFeatDim + pairwiseFeatDim + 8;
+	}
+
+	VectorXd StandardSimpleContextFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1+featureDim;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment: bias and unary feature
+			phi(classIndex*unaryFeatDim) += 1;
+			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
+		}
+
+		return phi;
+	}
+	
+	VectorXd StandardSimpleContextFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = featureDim;
+		
+		VectorXd phi = VectorXd::Zero(pairwiseFeatDim);
+
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				if (nodeLabel1 == nodeLabel2)
+					continue;
+
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2);
+				phi += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		// double counting?
+		phi = 0.5 * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardSimpleContextFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2)
+	{
+		VectorXd diff = nodeFeatures1 - nodeFeatures2;
+		VectorXd diffabs = diff.cwiseAbs();
+
+		// assignment
+		return diffabs;
+	}
+	
+	VectorXd StandardSimpleContextFeatures::computeContextTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int contextFeatDim = 4;
+		const int numContextPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numContextPairs*contextFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			for (int node2 = 0; node2 < numNodes; node2++)
+			{
+				if (node1 == node2)
+					continue;
+
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				double nodeLocationX1 = X.getNodeLocationX(node1);
+				double nodeLocationY1 = X.getNodeLocationY(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				double nodeLocationX2 = X.getNodeLocationX(node2);
+				double nodeLocationY2 = X.getNodeLocationY(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computeContextFeatures(nodeFeatures1, nodeFeatures2, 
+					nodeLocationX1, nodeLocationY1, nodeLocationX2, nodeLocationY2, 
+					nodeLabel1, nodeLabel2, classIndex);
+
+				for (int i = 0; i < contextFeatDim; i++)
+				{
+					if (edgeFeatureVector(i) != 0)
+						phi(classIndex*contextFeatDim + i) = edgeFeatureVector(i);
+				}
+			}
+		}
+		
+		return phi;
+	}
+
+	VectorXd StandardSimpleContextFeatures::computeContextFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd potential = VectorXd::Zero(4);
+
+			if (nodeLocationX1 < nodeLocationX2)
+			{
+				potential(0) = 1;
+			}
+			else if (nodeLocationX1 > nodeLocationX2)
+			{
+				potential(1) = 1;
+			}
+			
+			if (nodeLocationY1 < nodeLocationY2)
+			{
+				potential(2) = 1;
+			}
+			else if (nodeLocationY1 > nodeLocationY2)
+			{
+				potential(3) = 1;
+			}
+
+			return potential;
+		}
+		else
+		{
+			VectorXd potential = VectorXd::Zero(4);
+			return potential;
+		}
+	}
+
+	VectorXd StandardSimpleContextFeatures::computeMutexTermManually(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numMutexConstraints = 8;
+		
+		VectorXd phi = VectorXd::Zero(numMutexConstraints);
+
+		int numEdges = 0;
+		//for (int node1 = 0; node1 < numNodes; node1++)
+		for (set<int>::iterator it = action.begin(); it != action.end(); ++it)
+		{
+			int node1 = *it;
+
+			for (int node2 = 0; node2 < numNodes; node2++)
+			{
+				if (node1 == node2)
+					continue;
+
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				double nodeLocationX1 = X.getNodeLocationX(node1);
+				double nodeLocationY1 = X.getNodeLocationY(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				double nodeLocationX2 = X.getNodeLocationX(node2);
+				double nodeLocationY2 = X.getNodeLocationY(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				// MANUALLY DEFINED FOR STANFORD DATASET
+				if (nodeLabel1 == 1 && nodeLabel2 == 3 && nodeLocationY1 > nodeLocationY2)
+					phi(0) = 1;
+				if (nodeLabel1 == 3 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(1) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 4 && nodeLocationY1 > nodeLocationY2)
+					phi(2) = 1;
+				if (nodeLabel1 == 4 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(3) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 5 && nodeLocationY1 > nodeLocationY2)
+					phi(4) = 1;
+				if (nodeLabel1 == 5 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(5) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 7 && nodeLocationY1 > nodeLocationY2)
+					phi(6) = 1;
+				if (nodeLabel1 == 7 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(7) = 1;
+			}
+		}
+		
+		return phi;
+	}
+
+	VectorXd StandardSimpleContextFeatures::computeHoleTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		if (action.empty())
+			return VectorXd::Zero(1);
+
+		set<int> neighborLabels;
+		int actionLabel;
+		for (set<int>::iterator it = action.begin(); it != action.end(); ++it)
+		{
+			int node = *it;
+			set<int> nodeNeighborLabels = Y.getNeighborLabels(node);
+			neighborLabels.insert(nodeNeighborLabels.begin(), nodeNeighborLabels.end());
+			actionLabel = Y.getLabel(node);
+		}
+
+		int holeFound = 0;
+		if (neighborLabels.size() == 1)
+		{
+			for (set<int>::iterator it = neighborLabels.begin(); it != neighborLabels.end(); ++it)
+			{
+				int label = *it;
+				if (label != actionLabel)
+					holeFound = 1;
+			}
+		}
+
+		return holeFound * VectorXd::Ones(1);
+	}
+
+	/**************** Standard Simpler Features with Manual Context for SBD with hole term ****************/
+
+	StandardSimpleManualContextFeatures::StandardSimpleManualContextFeatures()
+	{
+		this->lambda1 = 1.0;
+		this->lambda2 = 1.0;
+		this->lambda3 = 1.0;
+	}
+
+	StandardSimpleManualContextFeatures::StandardSimpleManualContextFeatures(double lambda1, double lambda2, double lambda3)
+	{
+		this->lambda1 = lambda1;
+		this->lambda2 = lambda2;
+		this->lambda3 = lambda3;
+	}
+
+	StandardSimpleManualContextFeatures::~StandardSimpleManualContextFeatures()
+	{
+	}
+
+	RankFeatures StandardSimpleManualContextFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		int numConfigurations = 4;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
+		
+		VectorXd unaryTerm = lambda1 * computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = lambda2 * computePairwiseTerm(X, Y);
+		//VectorXd contextTerm = computeContextTerm(X, Y);
+		VectorXd contextTerm = computeMutexTermManually(X, Y, action);
+		VectorXd holeTerm = computeHoleTerm(X, Y, action);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, pairwiseFeatDim) = pairwiseTerm;
+		//phi.segment(numClasses*unaryFeatDim + pairwiseFeatDim, numPairs*numConfigurations) = contextTerm;
+		phi.segment(numClasses*unaryFeatDim + pairwiseFeatDim, 8) = contextTerm;
+		phi.segment(numClasses*unaryFeatDim + pairwiseFeatDim + 8, 1) = holeTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardSimpleManualContextFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+		int numConfigurations = 4;
+
+		//return numClasses*unaryFeatDim + pairwiseFeatDim + numPairs*numConfigurations;
+		return numClasses*unaryFeatDim + pairwiseFeatDim + 8 + 1;
+	}
 }
