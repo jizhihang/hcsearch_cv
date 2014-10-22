@@ -28,6 +28,17 @@ namespace HCSearch
 		}
 	}
 
+	void SavePrediction::saveLabels(ImgLabeling& YPred, ofstream* fh)
+	{
+		const int numNodes = YPred.getNumNodes();
+		*fh << YPred.getLabel(0);
+		for (int node = 1; node < numNodes; node++)
+		{
+			*fh << " " << YPred.getLabel(node);
+		}
+		*fh << endl;
+	}
+
 	void SavePrediction::saveCuts(ImgLabeling& YPred, string fileName)
 	{
 		if (!YPred.stochasticCutsAvailable)
@@ -270,7 +281,44 @@ namespace HCSearch
 		this->saveAnytimePredictions = false;
 	}
 
-	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
+	void ISearchProcedure::openAnyTimePredictionFiles(int timeBound, SearchMetadata searchMetadata, SearchType searchType)
+	{
+		stringstream ssHeuristicNodesFile;
+		ssHeuristicNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			<< "_" << SearchTypeStrings[searchType] 
+			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			<< "_time" << timeBound 
+				<< "_fold" << searchMetadata.iter 
+				<< "_" << searchMetadata.exampleName << ".txt";
+
+		stringstream ssCostNodesFile;
+		ssCostNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			<< "_" << SearchTypeStrings[searchType] 
+			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			<< "_time" << timeBound 
+				<< "_fold" << searchMetadata.iter 
+				<< "_" << searchMetadata.exampleName << ".txt";
+
+		if (this->writingToFile)
+			closeAnyTimePredictionFiles();
+
+		this->anytimeHeuristicNodesFile = new ofstream(ssHeuristicNodesFile.str().c_str());
+		this->anytimeCostNodesFile = new ofstream(ssCostNodesFile.str().c_str());
+		this->writingToFile = true;
+	}
+
+	void ISearchProcedure::closeAnyTimePredictionFiles()
+	{
+		this->anytimeHeuristicNodesFile->close();
+		delete this->anytimeHeuristicNodesFile;
+
+		this->anytimeCostNodesFile->close();
+		delete this->anytimeCostNodesFile;
+
+		this->writingToFile = false;
+	}
+
+	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeStep, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		if (searchMetadata.saveAnytimePredictions)
 		{
@@ -279,10 +327,11 @@ namespace HCSearch
 			ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
 				<< "_" << SearchTypeStrings[searchType] 
 				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeBound 
+				<< "_time" << timeStep 
 					<< "_fold" << searchMetadata.iter 
 					<< "_" << searchMetadata.exampleName << ".txt";
 			SavePrediction::saveLabels(bestHeuristicYPred, ssPredictNodes1.str());
+			//SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeHeuristicNodesFile);
 
 			if (!bestHeuristicYPred.stochasticCutsAvailable)
 			{
@@ -294,7 +343,7 @@ namespace HCSearch
 			ssPredictEdges1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
 			<< "_" << SearchTypeStrings[searchType] 
 			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-			<< "_time" << timeBound 
+			<< "_time" << timeStep 
 				<< "_fold" << searchMetadata.iter 
 				<< "_" << searchMetadata.exampleName << ".txt";
 			SavePrediction::saveCuts(bestHeuristicYPred, ssPredictEdges1.str());
@@ -304,10 +353,11 @@ namespace HCSearch
 			ssPredictNodes2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
 				<< "_" << SearchTypeStrings[searchType] 
 				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeBound 
+				<< "_time" << timeStep 
 					<< "_fold" << searchMetadata.iter 
 					<< "_" << searchMetadata.exampleName << ".txt";
 			SavePrediction::saveLabels(bestCostYPred, ssPredictNodes2.str());
+			//SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeCostNodesFile);
 
 			if (!bestCostYPred.stochasticCutsAvailable)
 			{
@@ -319,7 +369,7 @@ namespace HCSearch
 			ssPredictEdges2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
 			<< "_" << SearchTypeStrings[searchType] 
 			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-			<< "_time" << timeBound 
+			<< "_time" << timeStep 
 				<< "_fold" << searchMetadata.iter 
 				<< "_" << searchMetadata.exampleName << ".txt";
 			SavePrediction::saveCuts(bestCostYPred, ssPredictEdges2.str());
@@ -416,6 +466,7 @@ namespace HCSearch
 		openSet.push(root);
 		costSet.push(root);
 
+		openAnyTimePredictionFiles(timeBound, searchMetadata, searchType);
 		saveAnyTimePrediction(costSet.top()->getY(), costSet.top()->getY(), 0, searchMetadata, searchType);
 
 		// while the open set is not empty and the time step is less than the time bound,
@@ -461,6 +512,8 @@ namespace HCSearch
 		}
 
 		/***** search is done, return the lowest cost search node *****/
+
+		closeAnyTimePredictionFiles();
 
 		if (costSet.empty())
 		{
@@ -514,11 +567,19 @@ namespace HCSearch
 
 	BreadthFirstBeamSearchProcedure::BreadthFirstBeamSearchProcedure()
 	{
+		this->anytimeHeuristicNodesFile = NULL;
+		this->anytimeCostNodesFile = NULL;
+		this->writingToFile = false;
+
 		this->beamSize = this->DEFAULT_BEAM_SIZE;
 	}
 
 	BreadthFirstBeamSearchProcedure::BreadthFirstBeamSearchProcedure(int beamSize)
 	{
+		this->anytimeHeuristicNodesFile = NULL;
+		this->anytimeCostNodesFile = NULL;
+		this->writingToFile = false;
+
 		this->beamSize = beamSize;
 	}
 
@@ -636,11 +697,19 @@ namespace HCSearch
 
 	BestFirstBeamSearchProcedure::BestFirstBeamSearchProcedure()
 	{
+		this->anytimeHeuristicNodesFile = NULL;
+		this->anytimeCostNodesFile = NULL;
+		this->writingToFile = false;
+
 		this->beamSize = this->DEFAULT_BEAM_SIZE;
 	}
 
 	BestFirstBeamSearchProcedure::BestFirstBeamSearchProcedure(int beamSize)
 	{
+		this->anytimeHeuristicNodesFile = NULL;
+		this->anytimeCostNodesFile = NULL;
+		this->writingToFile = false;
+
 		this->beamSize = beamSize;
 	}
 
@@ -719,6 +788,9 @@ namespace HCSearch
 
 	GreedySearchProcedure::GreedySearchProcedure()
 	{
+		this->anytimeHeuristicNodesFile = NULL;
+		this->anytimeCostNodesFile = NULL;
+		this->writingToFile = false;
 	}
 
 	GreedySearchProcedure::~GreedySearchProcedure()
@@ -764,6 +836,7 @@ namespace HCSearch
 			learningModel = pruneModel;
 		}
 
+		openAnyTimePredictionFiles(timeBound, searchMetadata, searchType);
 		saveAnyTimePrediction(bestHeuristicNode->getY(), bestCostNode->getY(), 0, searchMetadata, searchType);
 
 		// while the open set is not empty and the time step is less than the time bound,
@@ -820,6 +893,8 @@ namespace HCSearch
 		}
 
 		/***** search is done, return the lowest cost search node *****/
+
+		closeAnyTimePredictionFiles();
 
 		if (bestCostNode == NULL)
 		{
