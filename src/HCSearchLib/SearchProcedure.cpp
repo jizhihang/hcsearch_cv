@@ -284,7 +284,7 @@ namespace HCSearch
 	void ISearchProcedure::openAnyTimePredictionFiles(int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		stringstream ssHeuristicNodesFile;
-		ssHeuristicNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+		ssHeuristicNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "hnodes" 
 			<< "_" << SearchTypeStrings[searchType] 
 			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
 			<< "_time" << timeBound 
@@ -324,7 +324,7 @@ namespace HCSearch
 		{
 			// save best heuristic ypred
 			//stringstream ssPredictNodes1;
-			//ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			//ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "hnodes" 
 			//	<< "_" << SearchTypeStrings[searchType] 
 			//	<< "_" << DatasetTypeStrings[searchMetadata.setType] 
 			//	<< "_time" << timeStep 
@@ -340,7 +340,7 @@ namespace HCSearch
 			}
 
 			stringstream ssPredictEdges1;
-			ssPredictEdges1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
+			ssPredictEdges1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "hedges" 
 			<< "_" << SearchTypeStrings[searchType] 
 			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
 			<< "_time" << timeStep 
