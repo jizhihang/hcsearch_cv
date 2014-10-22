@@ -452,29 +452,29 @@ namespace HCSearch
 
 		// clean up cost set
 		//deleteQueueElements(costSet);
-		vector<double> candidateLosses;
+		//vector<double> candidateLosses;
 		while (!costSet.empty())
 		{
 			SearchNode* state = costSet.top();
 			costSet.pop();
-			if (YTruth != NULL)
-			{
-				ImgLabeling YPred = state->getY();
-				candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
-			}
+			//if (YTruth != NULL)
+			//{
+			//	ImgLabeling YPred = state->getY();
+			//	candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
+			//}
 			delete state;
 		}
-		if (YTruth != NULL)
-		{
-			stringstream ssLosses;
-			ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
-				<< "_" << SearchTypeStrings[searchType] 
-				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeBound 
-					<< "_fold" << searchMetadata.iter 
-					<< "_" << searchMetadata.exampleName << ".txt";
-			SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
-		}
+		//if (YTruth != NULL)
+		//{
+		//	stringstream ssLosses;
+		//	ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
+		//		<< "_" << SearchTypeStrings[searchType] 
+		//		<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+		//		<< "_time" << timeBound 
+		//			<< "_fold" << searchMetadata.iter 
+		//			<< "_" << searchMetadata.exampleName << ".txt";
+		//	SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
+		//}
 
 		clock_t toc = clock();
 		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
