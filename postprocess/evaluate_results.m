@@ -141,7 +141,7 @@ for s = searchTypes
             %% for each time step
             nodesFileName = sprintf('nodes_%s_test_time%d_fold%d_%s.txt', searchType, timeRange(end), fold, fileName);
             nodesPath = [resultsDir '/results/' nodesFileName];
-            [inferLabelsMatrix, ~] = libsvmread(nodesPath);
+            inferLabelsMatrix = dlmread(nodesPath);
             inferLabelsMatrix = inferLabelsMatrix';
             
 %             prev = '';
