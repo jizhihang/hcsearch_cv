@@ -21,6 +21,11 @@ namespace HCSearch
 		static void saveLabels(ImgLabeling& YPred, string fileName);
 
 		/*!
+		 * Save the labels of the labeling.
+		 */
+		static void saveLabels(ImgLabeling& YPred, ofstream* fh);
+
+		/*!
 		 * Save the stochastic cuts of the labeling.
 		 */
 		static void saveCuts(ImgLabeling& YPred, string fileName);
@@ -85,6 +90,10 @@ namespace HCSearch
 		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
 		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByCost> SearchNodeCostPQ;
 
+		ofstream* anytimeHeuristicNodesFile;
+		ofstream* anytimeCostNodesFile;
+		bool writingToFile;
+
 	public:
 		virtual ~ISearchProcedure() {}
 
@@ -104,7 +113,10 @@ namespace HCSearch
 		SearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
 
-		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
+		void openAnyTimePredictionFiles(int timeBound, SearchMetadata searchMetadata, SearchType searchType);
+		void closeAnyTimePredictionFiles(SearchMetadata searchMetadata);
+		void saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeStep, SearchMetadata searchMetadata, SearchType searchType);
+
 		void trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
 		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
