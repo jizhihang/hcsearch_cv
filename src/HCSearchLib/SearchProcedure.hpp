@@ -114,7 +114,7 @@ namespace HCSearch
 			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
 
 		void openAnyTimePredictionFiles(int timeBound, SearchMetadata searchMetadata, SearchType searchType);
-		void closeAnyTimePredictionFiles();
+		void closeAnyTimePredictionFiles(SearchMetadata searchMetadata);
 		void saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeStep, SearchMetadata searchMetadata, SearchType searchType);
 
 		void trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 

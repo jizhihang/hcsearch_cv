@@ -283,39 +283,45 @@ namespace HCSearch
 
 	void ISearchProcedure::openAnyTimePredictionFiles(int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
-		stringstream ssHeuristicNodesFile;
-		ssHeuristicNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "hnodes" 
-			<< "_" << SearchTypeStrings[searchType] 
-			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-			<< "_time" << timeBound 
-				<< "_fold" << searchMetadata.iter 
-				<< "_" << searchMetadata.exampleName << ".txt";
+		if (searchMetadata.saveAnytimePredictions)
+		{
+			stringstream ssHeuristicNodesFile;
+			ssHeuristicNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "hnodes" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
 
-		stringstream ssCostNodesFile;
-		ssCostNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-			<< "_" << SearchTypeStrings[searchType] 
-			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-			<< "_time" << timeBound 
-				<< "_fold" << searchMetadata.iter 
-				<< "_" << searchMetadata.exampleName << ".txt";
+			stringstream ssCostNodesFile;
+			ssCostNodesFile << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
 
-		if (this->writingToFile)
-			closeAnyTimePredictionFiles();
+			if (this->writingToFile)
+				closeAnyTimePredictionFiles(searchMetadata);
 
-		this->anytimeHeuristicNodesFile = new ofstream(ssHeuristicNodesFile.str().c_str());
-		this->anytimeCostNodesFile = new ofstream(ssCostNodesFile.str().c_str());
-		this->writingToFile = true;
+			this->anytimeHeuristicNodesFile = new ofstream(ssHeuristicNodesFile.str().c_str());
+			this->anytimeCostNodesFile = new ofstream(ssCostNodesFile.str().c_str());
+			this->writingToFile = true;
+		}
 	}
 
-	void ISearchProcedure::closeAnyTimePredictionFiles()
+	void ISearchProcedure::closeAnyTimePredictionFiles(SearchMetadata searchMetadata)
 	{
-		this->anytimeHeuristicNodesFile->close();
-		delete this->anytimeHeuristicNodesFile;
+		if (searchMetadata.saveAnytimePredictions)
+		{
+			this->anytimeHeuristicNodesFile->close();
+			delete this->anytimeHeuristicNodesFile;
 
-		this->anytimeCostNodesFile->close();
-		delete this->anytimeCostNodesFile;
+			this->anytimeCostNodesFile->close();
+			delete this->anytimeCostNodesFile;
 
-		this->writingToFile = false;
+			this->writingToFile = false;
+		}
 	}
 
 	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeStep, SearchMetadata searchMetadata, SearchType searchType)
@@ -513,7 +519,7 @@ namespace HCSearch
 
 		/***** search is done, return the lowest cost search node *****/
 
-		closeAnyTimePredictionFiles();
+		closeAnyTimePredictionFiles(searchMetadata);
 
 		if (costSet.empty())
 		{
@@ -894,7 +900,7 @@ namespace HCSearch
 
 		/***** search is done, return the lowest cost search node *****/
 
-		closeAnyTimePredictionFiles();
+		closeAnyTimePredictionFiles(searchMetadata);
 
 		if (bestCostNode == NULL)
 		{
