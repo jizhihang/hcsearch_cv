@@ -270,33 +270,59 @@ namespace HCSearch
 		this->saveAnytimePredictions = false;
 	}
 
-	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
+	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		if (searchMetadata.saveAnytimePredictions)
 		{
-			stringstream ssPredictNodes;
-			ssPredictNodes << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			// save best heuristic ypred
+			stringstream ssPredictNodes1;
+			ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
 				<< "_" << SearchTypeStrings[searchType] 
 				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
 				<< "_time" << timeBound 
 					<< "_fold" << searchMetadata.iter 
 					<< "_" << searchMetadata.exampleName << ".txt";
-			SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+			SavePrediction::saveLabels(bestHeuristicYPred, ssPredictNodes1.str());
 
-			if (!YPred.stochasticCutsAvailable)
+			if (!bestHeuristicYPred.stochasticCutsAvailable)
 			{
-				YPred.stochasticCuts = YPred.graph.adjList;
-				YPred.stochasticCutsAvailable = true;
+				bestHeuristicYPred.stochasticCuts = bestHeuristicYPred.graph.adjList;
+				bestHeuristicYPred.stochasticCutsAvailable = true;
 			}
 
-			stringstream ssPredictEdges;
-			ssPredictEdges << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
+			stringstream ssPredictEdges1;
+			ssPredictEdges1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
 			<< "_" << SearchTypeStrings[searchType] 
 			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
 			<< "_time" << timeBound 
 				<< "_fold" << searchMetadata.iter 
 				<< "_" << searchMetadata.exampleName << ".txt";
-			SavePrediction::saveCuts(YPred, ssPredictEdges.str());
+			SavePrediction::saveCuts(bestHeuristicYPred, ssPredictEdges1.str());
+
+			// save best cost ypred
+			stringstream ssPredictNodes2;
+			ssPredictNodes2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveLabels(bestCostYPred, ssPredictNodes2.str());
+
+			if (!bestCostYPred.stochasticCutsAvailable)
+			{
+				bestCostYPred.stochasticCuts = bestCostYPred.graph.adjList;
+				bestCostYPred.stochasticCutsAvailable = true;
+			}
+
+			stringstream ssPredictEdges2;
+			ssPredictEdges2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
+			<< "_" << SearchTypeStrings[searchType] 
+			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			<< "_time" << timeBound 
+				<< "_fold" << searchMetadata.iter 
+				<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveCuts(bestCostYPred, ssPredictEdges2.str());
 		}
 	}
 
@@ -390,6 +416,8 @@ namespace HCSearch
 		openSet.push(root);
 		costSet.push(root);
 
+		saveAnyTimePrediction(costSet.top()->getY(), costSet.top()->getY(), 0, searchMetadata, searchType);
+
 		// while the open set is not empty and the time step is less than the time bound,
 		// perform search...
 		int timeStep = 0;
@@ -398,9 +426,6 @@ namespace HCSearch
 			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
 			clock_t ticInside = clock();
 
-			// save current best if anytime prediction enabled
-			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
-
 			/***** pick some subset of elements from the open set *****/
 
 			vector< SearchNode* > subsetOpenSet = selectSubsetOpenSet(openSet);
@@ -408,6 +433,9 @@ namespace HCSearch
 			/***** expand these elements *****/
 
 			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet, pruneModel, YTruth, searchType, timeStep, timeBound);
+
+			/***** save current best if anytime prediction enabled *****/
+			saveAnyTimePrediction(candidateSet.top()->getY(), costSet.top()->getY(), timeStep+1, searchMetadata, searchType);
 
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
@@ -736,6 +764,8 @@ namespace HCSearch
 			learningModel = pruneModel;
 		}
 
+		saveAnyTimePrediction(bestHeuristicNode->getY(), bestCostNode->getY(), 0, searchMetadata, searchType);
+
 		// while the open set is not empty and the time step is less than the time bound,
 		// perform search...
 		int timeStep = 0;
@@ -744,12 +774,12 @@ namespace HCSearch
 			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
 			clock_t ticInside = clock();
 
-			// save current best if anytime prediction enabled
-			saveAnyTimePrediction(bestCostNode->getY(), timeStep, searchMetadata, searchType);
-
 			/***** expand the best heuristic node and update the best heuristic and cost nodes *****/
 
 			SearchNodeList candidateSet = expandElements(bestHeuristicNode, bestCostNode, costSet, pruneModel, YTruth, searchType, timeStep, timeBound, numOutputs);
+
+			/***** save current best if anytime prediction enabled *****/
+			saveAnyTimePrediction(bestHeuristicNode->getY(), bestCostNode->getY(), timeStep+1, searchMetadata, searchType);
 
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 

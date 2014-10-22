@@ -104,7 +104,7 @@ namespace HCSearch
 		SearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
 
-		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
+		void saveAnyTimePrediction(ImgLabeling bestHeuristicYPred, ImgLabeling bestCostYPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 		void trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
 		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
