@@ -139,21 +139,31 @@ for s = searchTypes
             fullTruth = dlmread(fullTruthPath);
             
             %% for each time step
-            prev = '';
+            nodesFileName = sprintf('nodes_%s_test_time%d_fold%d_%s.txt', searchType, timeRange(end), fold, fileName);
+            nodesPath = [resultsDir '/results/' nodesFileName];
+            [inferLabelsMatrix, ~] = libsvmread(nodesPath);
+            inferLabelsMatrix = inferLabelsMatrix';
+            
+%             prev = '';
             for t = 1:length(timeRange)
                 timeStep = timeRange(t);
                 fprintf('\t\t\tOn time step %d...\n', timeStep);
 
-                nodesFileName = sprintf('nodes_%s_test_time%d_fold%d_%s.txt', searchType, timeStep, fold, fileName);
-                nodesPath = [resultsDir '/results/' nodesFileName];
+%                 nodesFileName = sprintf('nodes_%s_test_time%d_fold%d_%s.txt', searchType, timeStep, fold, fileName);
+%                 nodesPath = [resultsDir '/results/' nodesFileName];
 
-                if t ~= 1 && ~exist(nodesPath, 'file')
-                    nodesPath = prev;
-                end
+%                 if t ~= 1 && ~exist(nodesPath, 'file')
+%                     nodesPath = prev;
+%                 end
 
                 %% read nodes
-                [inferLabels, ~] = libsvmread(nodesPath);
-                
+%                 [inferLabels, ~] = libsvmread(nodesPath);
+                if t > size(inferLabelsMatrix, 2)
+                    inferLabels = inferLabelsMatrix(:, end);
+                else
+                    inferLabels = inferLabelsMatrix(:, t);
+                end
+
                 %% read inference on pixel level
                 if configFlag ~= 2
                     inferPixels = infer_pixels(inferLabels, segments);
@@ -176,7 +186,7 @@ for s = searchTypes
                     stat.totals(fd, t) = stat.totals(fd, t) + numel(fullTruth);
                 end
                 
-                prev = nodesPath;
+%                 prev = nodesPath;
             end % time range
         end % files
     end % fold
