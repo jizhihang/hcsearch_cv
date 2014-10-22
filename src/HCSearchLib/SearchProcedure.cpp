@@ -323,15 +323,15 @@ namespace HCSearch
 		if (searchMetadata.saveAnytimePredictions)
 		{
 			// save best heuristic ypred
-			stringstream ssPredictNodes1;
-			ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-				<< "_" << SearchTypeStrings[searchType] 
-				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeStep 
-					<< "_fold" << searchMetadata.iter 
-					<< "_" << searchMetadata.exampleName << ".txt";
-			SavePrediction::saveLabels(bestHeuristicYPred, ssPredictNodes1.str());
-			//SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeHeuristicNodesFile);
+			//stringstream ssPredictNodes1;
+			//ssPredictNodes1 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			//	<< "_" << SearchTypeStrings[searchType] 
+			//	<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			//	<< "_time" << timeStep 
+			//		<< "_fold" << searchMetadata.iter 
+			//		<< "_" << searchMetadata.exampleName << ".txt";
+			//SavePrediction::saveLabels(bestHeuristicYPred, ssPredictNodes1.str());
+			SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeHeuristicNodesFile);
 
 			if (!bestHeuristicYPred.stochasticCutsAvailable)
 			{
@@ -349,15 +349,15 @@ namespace HCSearch
 			SavePrediction::saveCuts(bestHeuristicYPred, ssPredictEdges1.str());
 
 			// save best cost ypred
-			stringstream ssPredictNodes2;
-			ssPredictNodes2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-				<< "_" << SearchTypeStrings[searchType] 
-				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeStep 
-					<< "_fold" << searchMetadata.iter 
-					<< "_" << searchMetadata.exampleName << ".txt";
-			SavePrediction::saveLabels(bestCostYPred, ssPredictNodes2.str());
-			//SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeCostNodesFile);
+			//stringstream ssPredictNodes2;
+			//ssPredictNodes2 << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+			//	<< "_" << SearchTypeStrings[searchType] 
+			//	<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			//	<< "_time" << timeStep 
+			//		<< "_fold" << searchMetadata.iter 
+			//		<< "_" << searchMetadata.exampleName << ".txt";
+			//SavePrediction::saveLabels(bestCostYPred, ssPredictNodes2.str());
+			SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeCostNodesFile);
 
 			if (!bestCostYPred.stochasticCutsAvailable)
 			{
