@@ -113,6 +113,7 @@ for s = searchTypes
     
     if configFlag ~= 2
         stat.avghamming = zeros(1, length(timeRange));
+        stat.maxhamming = zeros(1, length(timeRange));
         stat.stdhamming = zeros(1, length(timeRange));
     end
     
@@ -252,6 +253,7 @@ for s = searchTypes
     
     if configFlag ~= 2
         stat.avghamming = mean(stat.hamming, 1);
+        stat.maxhamming = max(stat.hamming, [], 1);
         stat.stdhamming = std(stat.hamming, 0, 1);
     end
     
