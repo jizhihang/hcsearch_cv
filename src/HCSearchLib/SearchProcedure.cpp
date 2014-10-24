@@ -363,7 +363,7 @@ namespace HCSearch
 			//		<< "_fold" << searchMetadata.iter 
 			//		<< "_" << searchMetadata.exampleName << ".txt";
 			//SavePrediction::saveLabels(bestCostYPred, ssPredictNodes2.str());
-			SavePrediction::saveLabels(bestHeuristicYPred, this->anytimeCostNodesFile);
+			SavePrediction::saveLabels(bestCostYPred, this->anytimeCostNodesFile);
 
 			if (!bestCostYPred.stochasticCutsAvailable)
 			{
