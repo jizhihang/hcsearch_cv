@@ -35,6 +35,8 @@ namespace MyProgramOptions
 		demoMode = false;
 		schedule = vector< HCSearch::SearchType >();
 		runAll = false;
+		runAllLearn = false;
+		runAllInfer = false;
 
 		// options
 
@@ -235,6 +237,14 @@ namespace MyProgramOptions
 			else if (strcmp(argv[i], "--runall") == 0)
 			{
 				po.runAll = true;
+			}
+			else if (strcmp(argv[i], "--runlearn") == 0)
+			{
+				po.runAllLearn = true;
+			}
+			else if (strcmp(argv[i], "--runinfer") == 0)
+			{
+				po.runAllInfer = true;
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
 			{
@@ -731,7 +741,7 @@ namespace MyProgramOptions
 		// demo mode if nothing specified or used --demo flag
 		if (po.demoMode)
 			po.schedule.clear();
-		else if (po.runAll)
+		else if (po.runAll || po.runAllLearn || po.runAllInfer)
 			po.schedule.clear();
 		else if (po.schedule.empty() && !po.demoMode)
 			po.demoMode = true;
@@ -749,6 +759,8 @@ namespace MyProgramOptions
 		cerr << "\t--help\t\t" << ": produce help message" << endl;
 		cerr << "\t--demo\t\t" << ": run the demo program (ignores --learn and --infer)" << endl;
 		cerr << "\t--runall\t\t" << ": run all learning and inference (ignores --learn and --infer)" << endl;
+		cerr << "\t--runlearn\t\t" << ": run all learning only (ignores --learn and --infer)" << endl;
+		cerr << "\t--runinfer\t\t" << ": run all inference only (ignores --learn and --infer)" << endl;
 		cerr << "\t--learn arg\t" << ": learning" << endl;
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;

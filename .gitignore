@@ -35,3 +35,6 @@ results*/*
 !/HCSearch*.exe
 !/external/vw.exe
 !/external/LICENSE
+
+# other
+setup_paths.m

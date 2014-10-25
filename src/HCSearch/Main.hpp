@@ -61,6 +61,6 @@ HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOption
  */
 void printInfo(MyProgramOptions::ProgramOptions po);
 
-void getRunAllSchedule(vector< HCSearch::SearchType >& schedule);
+void getRunAllSchedule(MyProgramOptions::ProgramOptions& po);
 
 void writeProgressToFile(HCSearch::SearchType completedSearchType);
