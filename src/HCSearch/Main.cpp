@@ -53,8 +53,8 @@ int main(int argc, char* argv[])
 		Logger::setLogLevel(DEBUG);
 
 	// run all schedule option
-	if (po.runAll)
-		getRunAllSchedule(po.schedule);
+	if (po.runAll || po.runAllLearn || po.runAllInfer)
+		getRunAllSchedule(po);
 
 	// print useful information
 	printInfo(po);
@@ -1291,7 +1291,7 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 	}
 }
 
-void getRunAllSchedule(vector< HCSearch::SearchType >& schedule)
+void getRunAllSchedule(MyProgramOptions::ProgramOptions& po)
 {
 	//bool learnP = false;
 	bool learnH = false;
@@ -1357,20 +1357,20 @@ void getRunAllSchedule(vector< HCSearch::SearchType >& schedule)
 	// create schedule
 	//if (!learnP)
 	//	schedule.push_back(HCSearch::LEARN_PRUNE);
-	if (!learnH)
-		schedule.push_back(HCSearch::LEARN_H);
-	if (!learnC)
-		schedule.push_back(HCSearch::LEARN_C);
-	if (!learnCOH)
-		schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
-	if (!inferLL)
-		schedule.push_back(HCSearch::LL);
-	if (!inferHL)
-		schedule.push_back(HCSearch::HL);
-	if (!inferHC)
-		schedule.push_back(HCSearch::HC);
-	if (!inferLC)
-		schedule.push_back(HCSearch::LC);
+	if (!learnH && (po.runAll || po.runAllLearn))
+		po.schedule.push_back(HCSearch::LEARN_H);
+	if (!learnC && (po.runAll || po.runAllLearn))
+		po.schedule.push_back(HCSearch::LEARN_C);
+	if (!learnCOH && (po.runAll || po.runAllLearn))
+		po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+	if (!inferLL && (po.runAll || po.runAllInfer))
+		po.schedule.push_back(HCSearch::LL);
+	if (!inferHL && (po.runAll || po.runAllInfer))
+		po.schedule.push_back(HCSearch::HL);
+	if (!inferHC && (po.runAll || po.runAllInfer))
+		po.schedule.push_back(HCSearch::HC);
+	if (!inferLC && (po.runAll || po.runAllInfer))
+		po.schedule.push_back(HCSearch::LC);
 }
 
 void writeProgressToFile(HCSearch::SearchType completedSearchType)
