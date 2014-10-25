@@ -57,6 +57,8 @@ namespace MyProgramOptions
 		bool demoMode;
 		vector< HCSearch::SearchType > schedule;
 		bool runAll;
+		bool runAllLearn;
+		bool runAllInfer;
 
 		// options
 
