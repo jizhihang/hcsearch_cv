@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->OUTPUT_TEMP_FOLDER_NAME = po.tempFolderName;
 
 	HCSearch::Global::settings->USE_EDGE_WEIGHTS = po.useEdgeWeights;
+	HCSearch::Global::settings->USE_GROUNDTRUTH_BEST_COST_OUTPUT = po.useGroundtruthBestCost;
 
 	HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE_NAME = po.heuristicModelFileName;
 	HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE_NAME = po.costModelFileName;

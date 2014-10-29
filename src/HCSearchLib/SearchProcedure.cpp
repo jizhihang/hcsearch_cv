@@ -917,12 +917,24 @@ namespace HCSearch
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
 		{
-			vector< RankFeatures > bestFeatures;
-			vector< RankFeatures > worstFeatures;
-			vector< double > bestLosses;
-			vector< double > worstLosses;
-			sortNodes(searchType, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
-			trainRanker(costModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			if (Global::settings->USE_GROUNDTRUTH_BEST_COST_OUTPUT)
+			{
+				vector< RankFeatures > bestFeatures;
+				vector< RankFeatures > worstFeatures;
+				vector< double > bestLosses;
+				vector< double > worstLosses;
+				sortNodesGroundtruth(searchType, costSet, X, YTruth, searchSpace, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(costModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			}
+			else
+			{
+				vector< RankFeatures > bestFeatures;
+				vector< RankFeatures > worstFeatures;
+				vector< double > bestLosses;
+				vector< double > worstLosses;
+				sortNodes(searchType, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(costModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			}
 		}
 
 		// clean up cost set
@@ -1080,6 +1092,73 @@ namespace HCSearch
 				bestLosses.push_back(currentValue);
 			}
 			else
+			{
+				worstSet.push_back(currentFeatures);
+				worstLosses.push_back(currentValue);
+			}
+		}
+	}
+	
+	void GreedySearchProcedure::sortNodesGroundtruth(SearchType searchType, SearchNodeList& candidateSet, ImgFeatures& X, ImgLabeling* YTruth, SearchSpace* searchSpace, 
+		vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
+	{
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		{
+			LOG(ERROR) << "inappropriate search type for sorting";
+			abort();
+		}
+		if (candidateSet.empty())
+		{
+			LOG(WARNING) << "candidate set is empty; cannot partition";
+			return;
+		}
+
+		// add ground truth
+		double gtValue = 0.0;
+		RankFeatures gtFeatures;
+		if (searchType == LEARN_H)
+		{
+			gtFeatures = searchSpace->computeHeuristicFeatures(X, *YTruth);
+		}
+		else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		{
+			gtFeatures = searchSpace->computeCostFeatures(X, *YTruth);
+		}
+		else
+		{
+			LOG(ERROR) << "Unknown search type for features";
+			abort();
+		}
+		bestSet.push_back(gtFeatures);
+		bestLosses.push_back(gtValue);
+
+		// add rest
+		double minValue = gtValue;
+		for (SearchNodeList::iterator it = candidateSet.begin(); it != candidateSet.end(); ++it)
+		{
+			SearchNode* current = *it;
+
+			// get the current value and features of the node
+			double currentValue;
+			RankFeatures currentFeatures;
+			if (searchType == LEARN_H)
+			{
+				currentValue = current->getHeuristic();
+				currentFeatures = current->getHeuristicFeatures();
+			}
+			else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+			{
+				currentValue = current->getCost();
+				currentFeatures = current->getCostFeatures();
+			}
+			else
+			{
+				LOG(ERROR) << "Unknown search type for features";
+				abort();
+			}
+
+			// put into worst set
+			if (currentValue > minValue)
 			{
 				worstSet.push_back(currentFeatures);
 				worstLosses.push_back(currentValue);

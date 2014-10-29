@@ -248,6 +248,12 @@ namespace HCSearch
 		 */
 		bool USE_EDGE_WEIGHTS;
 
+		/*!
+		 * @brief Use groundtruth as best cost output for training 
+		 * rather than the best of all generated states.
+		 */
+		bool USE_GROUNDTRUTH_BEST_COST_OUTPUT;
+
 		/**************** Experiment Settings ****************/
 
 		/*!

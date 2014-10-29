@@ -64,6 +64,7 @@ namespace MyProgramOptions
 		pruneRatio = 0.5;
 		badPruneRatio = 1.0;
 		useEdgeWeights = false;
+		useGroundtruthBestCost = false;
 
 		nodeClamp = false;
 		edgeClamp = false;
@@ -717,6 +718,15 @@ namespace MyProgramOptions
 						po.useEdgeWeights = false;
 				}
 			}
+			else if (strcmp(argv[i], "--use-groundtruth-best-cost") == 0)
+			{
+				po.useGroundtruthBestCost = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.useGroundtruthBestCost = false;
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -813,6 +823,7 @@ namespace MyProgramOptions
 			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained" << endl;
 		cerr << "\t--temp-path arg\t" << ": temp folder name" << endl;
 		cerr << "\t--use-edge-weights arg\t\t" << ": use edge weights if true (must provide --edges-path)" << endl;
+		cerr << "\t--use-groundtruth-best-cost arg\t\t" << ": use groundtruth for best cost output during training if true" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
