@@ -275,6 +275,17 @@ namespace HCSearch
 		Y->graph = labelGraph;
 		Y->nodeWeightsAvailable = true;
 		Y->nodeWeights = nodeWeights;
+		Y->nodeDepthsAvailable = false;
+
+		// read node depths file
+		if (MyFileSystem::FileSystem::checkFileExists(Global::settings->paths->INPUT_NODE_DEPTHS_DIR))
+		{
+			string nodesDepthsFile = Global::settings->paths->INPUT_NODE_DEPTHS_DIR + fileName + ".txt";
+			VectorXd depths = VectorXd::Zero(numNodes);
+			readNodeDepthsFile(nodesFile, depths);
+			Y->nodeDepthsAvailable = true;
+			Y->nodeDepths = depths;
+		}
 	}
 
 	void Dataset::unloadImage(ImgFeatures*& X, ImgLabeling*& Y)
@@ -432,6 +443,43 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "cannot open file to nodes data!";
+			abort();
+		}
+	}
+
+	void Dataset::readNodeDepthsFile(string filename, VectorXd& depths)
+	{
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					if (lineIndex >= depths.size())
+					{
+						LOG(WARNING) << "line index exceeds number of nodes; ignoring the rest...";
+						break;
+					}
+
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// get label
+					getline(iss, token, ' ');
+					depths(lineIndex) = atof(token.c_str());
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to nodes depth data!";
 			abort();
 		}
 	}

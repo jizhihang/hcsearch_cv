@@ -202,6 +202,7 @@ namespace HCSearch
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
 		INPUT_NODES_FOLDER_NAME = "nodes";
+		INPUT_NODE_DEPTHS_FOLDER_NAME = "nodedepths";
 		INPUT_EDGES_FOLDER_NAME = "edges";
 		INPUT_EDGE_FEATURES_FOLDER_NAME = "edgefeatures";
 
@@ -291,6 +292,7 @@ namespace HCSearch
 
 		// data directories
 		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_NODES_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->INPUT_NODE_DEPTHS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_NODE_DEPTHS_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_NODE_LOCATIONS_DIR = this->paths->INPUT_DIR + "nodelocations" + this->paths->DIR_SEP;
 		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGES_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_EDGE_FEATURES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGE_FEATURES_FOLDER_NAME + this->paths->DIR_SEP;

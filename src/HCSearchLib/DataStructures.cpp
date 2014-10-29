@@ -103,6 +103,7 @@ namespace HCSearch
 		this->confidencesAvailable = false;
 		this->stochasticCutsAvailable = false;
 		this->nodeWeightsAvailable = false;
+		this->nodeDepthsAvailable = false;
 	}
 
 	ImgLabeling::~ImgLabeling()

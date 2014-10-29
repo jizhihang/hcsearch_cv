@@ -588,6 +588,13 @@ namespace HCSearch
 		static void readNodesFile(string filename, VectorXi& labels, MatrixXd& features);
 
 		/*!
+		 * Read a nodes depths file for a particular image.
+		 * @param[in] filename Path to nodes file
+		 * @param[out] depths Groundtruth depths per node
+		 */
+		static void readNodeDepthsFile(string filename, VectorXd& depths);
+
+		/*!
 		 * Read a node locations file for a particular image.
 		 * @param[in] filename Path to node locations file
 		 * @param[out] nodeLocations Normalized position per node

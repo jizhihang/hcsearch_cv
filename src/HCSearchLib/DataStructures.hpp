@@ -235,9 +235,15 @@ namespace HCSearch
 		 */
 		VectorXd nodeWeights;
 
+		/*!
+		 * Store node depths for monocular estimation problems.
+		 */
+		VectorXd nodeDepths;
+
 		bool confidencesAvailable;
 		bool stochasticCutsAvailable;
 		bool nodeWeightsAvailable;
+		bool nodeDepthsAvailable;
 
 	public:
 		ImgLabeling();

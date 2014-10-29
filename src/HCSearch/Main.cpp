@@ -1249,6 +1249,7 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << endl;
 
 		LOG() << "INPUT_NODES_DIR: " << HCSearch::Global::settings->paths->INPUT_NODES_DIR << endl;
+		LOG() << "INPUT_NODE_DEPTHS_DIR: " << HCSearch::Global::settings->paths->INPUT_NODE_DEPTHS_DIR << endl;
 		LOG() << "INPUT_EDGES_DIR: " << HCSearch::Global::settings->paths->INPUT_EDGES_DIR  << endl;
 		LOG() << "INPUT_META_DIR: " << HCSearch::Global::settings->paths->INPUT_META_DIR  << endl;
 		LOG() << "INPUT_SEGMENTS_DIR: " << HCSearch::Global::settings->paths->INPUT_SEGMENTS_DIR  << endl;
