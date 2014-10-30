@@ -13,6 +13,10 @@ if ~exist([outputPath filesep 'initstate' filesep], 'dir')
     mkdir([outputPath filesep 'initstate' filesep]);
 end
 
+if ~exist([outputPath filesep 'nodedepths' filesep], 'dir')
+    mkdir([outputPath filesep 'nodedepths' filesep]);
+end
+
 %% get features
 nFiles = length(allData);
 trainNodeLabels = [];
@@ -51,7 +55,7 @@ end
 initStateModel = train(trainNodeLabels, sparse(trainNodeFeatures), '-s 12 -c 10');
 
 %% generate the initial prediction files
-centers = dlmread([outputPath filesep 'centers.txt']);
+centers = dlmread([outputPath filesep 'depth_centers.txt']);
 for i = 1:nFiles
     fprintf('Predicting example %d...\n', i-1);
     
@@ -65,23 +69,6 @@ for i = 1:nFiles
     initPredFile = sprintf('%s.txt', filename);
     nodesFile = sprintf('%s.txt', filename);
     
-    if ispc
-        LIBLINEAR_PREDICT = [LIBLINEAR_PATH filesep 'windows' filesep 'predict'];
-    elseif isunix
-        LIBLINEAR_PREDICT = [LIBLINEAR_PATH filesep 'predict'];
-    end
-    
-    LIBLINEAR_PREDICT_CMD = [LIBLINEAR_PREDICT ' ' ...
-        outputPath filesep 'nodes' filesep nodesFile ' ' ...
-        outputPath filesep INITFUNC_MODEL_FILE ' ' ...
-        outputPath filesep 'initstate' filesep initPredFile];
-    
-    if ispc
-        dos(LIBLINEAR_PREDICT_CMD);
-    elseif isunix
-        unix(LIBLINEAR_PREDICT_CMD);
-    end
-    
     [initStateLabels, ~, ~] = predict(DUMMY_VALUE*ones(size(allData{i}.feat2, 1), 1), sparse(allData{i}.feat2), initStateModel);
     allData{i}.initDepths = initStateLabels;
     allData{i}.initState = initStateLabels;
@@ -89,4 +76,11 @@ for i = 1:nFiles
     for row = 1:length(allData{i}.initState)
         [~, allData{i}.initState(row)] = min(vl_alldist(allData{i}.initDepths(row), centers'));
     end
+    
+    fid = fopen([outputPath filesep 'initstate' filesep initPredFile], 'w');
+    fprintf(fid, 'labels \n');
+    fclose(fid);
+    dlmwrite([outputPath filesep 'initstate' filesep initPredFile], allData{i}.initState, '-append');
+    
+    dlmwrite([outputPath filesep 'nodedepths' filesep initPredFile], allData{i}.segDepths);
 end
