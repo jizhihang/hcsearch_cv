@@ -570,6 +570,8 @@ namespace MyProgramOptions
 						po.lossMode = HAMMING;
 					else if (strcmp(argv[i+1], "pixel-hamming") == 0)
 						po.lossMode = PIXEL_HAMMING;
+					else if (strcmp(argv[i+1], "depth") == 0)
+						po.lossMode = DEPTH;
 				}
 			}
 			else if (strcmp(argv[i], "--prune") == 0)
@@ -805,7 +807,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
-		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
+		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming|depth" << endl;
 		cerr << "\t--prune arg\t\t" << ": none|ranker|oracle|simulated" << endl;
 		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
 		cerr << "\t--prune-bad-ratio arg\t\t" << ": fraction of bad candidates to prune for oracle pruner" << endl;

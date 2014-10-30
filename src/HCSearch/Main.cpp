@@ -88,6 +88,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "Pixel Hamming loss" << endl;
 		lossFunc = new HCSearch::PixelHammingLoss();
 		break;
+	case MyProgramOptions::ProgramOptions::DEPTH:
+		LOG() << "Depth loss" << endl;
+		lossFunc = new HCSearch::DepthLoss();
+		break;
 	default:
 		LOG(ERROR) << "undefined loss mode.";
 	}
