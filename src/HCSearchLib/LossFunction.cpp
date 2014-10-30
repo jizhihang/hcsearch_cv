@@ -70,7 +70,8 @@ namespace HCSearch
 		}
 		if (!YTruth.nodeDepthsAvailable || !Global::settings->CLASSES.isDepthsAvailable())
 		{
-			LOG(WARNING) << "node depths are not available for computing depth loss.";
+			LOG(ERROR) << "node depths are not available for computing depth loss.";
+			abort(1);
 		}
 
 		double loss = 0.0;
@@ -82,9 +83,15 @@ namespace HCSearch
 
 			double depthError = abs(log10(center) - log10(YTruth.nodeDepths(i)));
 			//double relativeDepthError = abs(center - YTruth.nodeDepths(i))/YTruth.nodeDepths(i);
-			loss += YTruth.nodeWeights(i)*depthError;
+			if (YTruth.nodeWeightsAvailable)
+				loss += YTruth.nodeWeights(i)*depthError;
+			else
+				loss += depthError;
 		}
 
-		return loss;
+		if (YTruth.nodeWeightsAvailable)
+			return loss;
+		else
+			return loss/numNodes;
 	}
 }
