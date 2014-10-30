@@ -36,6 +36,9 @@ namespace HCSearch
 		int backgroundLabel; // background label
 		bool backgroundExists; // if background class even exists
 
+		map<int, double> depths; // label -> depth
+		bool depthsAvailable; // whether depths available
+
 	public:
 		ClassMap();
 		~ClassMap();
@@ -58,6 +61,10 @@ namespace HCSearch
 
 		void addClass(int classIndex, int classLabel, bool isBackground);
 		void setBackgroundLabel(int classLabel);
+
+		bool isDepthsAvailable();
+		double getDepth(int label);
+		void addDepth(int classLabel, double depth);
 	};
 
 	/**************** Run-time Statistics ****************/
@@ -132,6 +139,7 @@ namespace HCSearch
 		string INPUT_SPLITS_TEST_FILE_BASE;
 
 		string INPUT_METADATA_FILE;
+		string INPUT_DEPTH_CENTERS_FILE;
 		string INPUT_CODEBOOK_FILE;
 		string INPUT_INITFUNC_TRAINING_FILE;
 

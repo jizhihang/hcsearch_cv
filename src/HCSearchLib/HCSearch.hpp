@@ -498,6 +498,7 @@ namespace HCSearch
 		static void initializeHelper();
 		static void finalizeHelper();
 		static void setClasses();
+		static void setDepths();
 		static set<int> parseList(string str);
 	};
 

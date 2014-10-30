@@ -1273,6 +1273,7 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << "INPUT_SPLITS_TEST_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE  << endl;
 
 		LOG() << "INPUT_METADATA_FILE: " << HCSearch::Global::settings->paths->INPUT_METADATA_FILE  << endl;
+		LOG() << "INPUT_DEPTH_CENTERS_FILE: " << HCSearch::Global::settings->paths->INPUT_DEPTH_CENTERS_FILE << endl;
 		LOG() << "INPUT_CODEBOOK_FILE: " << HCSearch::Global::settings->paths->INPUT_CODEBOOK_FILE  << endl;
 		LOG() << "INPUT_SPLITS_FOLDER_NAME: " << HCSearch::Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE  << endl;
 

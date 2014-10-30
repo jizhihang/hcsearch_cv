@@ -60,6 +60,9 @@ namespace HCSearch
 
 		// set classes
 		setClasses();
+
+		// set depths if appropriate
+		setDepths();
 	}
 
 	void Setup::finalize()
@@ -178,6 +181,55 @@ namespace HCSearch
 			}
 		}
 		LOG() << endl;
+	}
+
+	void Setup::setDepths()
+	{
+		string filename = Global::settings->paths->INPUT_DEPTH_CENTERS_FILE;
+		
+		if (!MyFileSystem::FileSystem::checkFileExists(filename))
+		{
+			LOG(INFO) << "No depths file.";
+			return;
+		}
+		
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int label = 1;
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					if (lineIndex >= Global::settings->CLASSES.numClasses())
+					{
+						LOG(WARNING) << "line index exceeds number of classes; ignoring the rest...";
+						break;
+					}
+
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// get depth
+					getline(iss, token, ' ');
+					double depth = atof(token.c_str());
+
+					// add depth
+					Global::settings->CLASSES.addDepth(label, depth);
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to depth centers data!";
+			abort();
+		}
 	}
 
 	set<int> Setup::parseList(string str)

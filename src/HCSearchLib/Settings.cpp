@@ -17,6 +17,7 @@ namespace HCSearch
 	{
 		this->numBackground = 0;
 		this->backgroundExists = false;
+		this->depthsAvailable = false;
 	}
 
 	ClassMap::~ClassMap()
@@ -136,6 +137,29 @@ namespace HCSearch
 	{
 		this->backgroundLabel = classLabel;
 		this->backgroundExists = true;
+	}
+
+	bool ClassMap::isDepthsAvailable()
+	{
+		return this->depthsAvailable;
+	}
+	
+	double ClassMap::getDepth(int label)
+	{
+		if (!isDepthsAvailable())
+		{
+			LOG(ERROR) << "cannot get depth because not available!";
+			exit(1);
+			return 0;
+		}
+
+		return this->depths.at(label);
+	}
+
+	void ClassMap::addDepth(int classLabel, double depth)
+	{
+		this->depths[classLabel] = depth;
+		this->depthsAvailable = true;
 	}
 
 	/**************** Run-time Statistics ****************/
@@ -306,6 +330,7 @@ namespace HCSearch
 		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TEST_FILE_BASE;
 
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
+		this->paths->INPUT_DEPTH_CENTERS_FILE = this->paths->INPUT_DIR + "depth_centers.txt";
 		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";
 		this->paths->INPUT_INITFUNC_TRAINING_FILE = this->paths->INPUT_DIR + "initfunc_training.txt";
 

@@ -1,5 +1,6 @@
 #include "LossFunction.hpp"
 #include "MyLogger.hpp"
+#include "Globals.hpp"
 
 namespace HCSearch
 {
@@ -67,42 +68,20 @@ namespace HCSearch
 		{
 			LOG(WARNING) << "node weights are not available for computing depth loss.";
 		}
-		if (!YTruth.nodeDepthsAvailable)
+		if (!YTruth.nodeDepthsAvailable || !Global::settings->CLASSES.isDepthsAvailable())
 		{
 			LOG(WARNING) << "node depths are not available for computing depth loss.";
 		}
-
-		// TODO: remove hard code
-		vector<double> centers;
-		centers.push_back(3.3293);
-		centers.push_back(4.6733);
-		centers.push_back(6.1544);
-		centers.push_back(7.9779);
-		centers.push_back(9.8224);
-		centers.push_back(11.580);
-		centers.push_back(13.503);
-		centers.push_back(15.593);
-		centers.push_back(18.064);
-		centers.push_back(20.734);
-		centers.push_back(23.624);
-		centers.push_back(27.008);
-		centers.push_back(30.882);
-		centers.push_back(35.421);
-		centers.push_back(40.498);
-		centers.push_back(47.353);
-		centers.push_back(55.278);
-		centers.push_back(65.359);
-		centers.push_back(79.974);
-		centers.push_back(81.914);
 
 		double loss = 0.0;
 		int numNodes = YTruth.nodeDepths.size();
 		for (int i = 0; i < numNodes; i++)
 		{
 			int label = YPred.getLabel(i);
-			double center = centers[label-1];
+			double center = Global::settings->CLASSES.getDepth(label);
 
 			double depthError = abs(log10(center) - log10(YTruth.nodeDepths(i)));
+			//double relativeDepthError = abs(center - YTruth.nodeDepths(i))/YTruth.nodeDepths(i);
 			loss += YTruth.nodeWeights(i)*depthError;
 		}
 
