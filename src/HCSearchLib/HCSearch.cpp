@@ -220,6 +220,8 @@ namespace HCSearch
 
 					// add depth
 					Global::settings->CLASSES.addDepth(label, depth);
+					LOG(DEBUG) << "Add depth: label=" << label << ", depth=" << depth;
+					label++;
 				}
 				lineIndex++;
 			}
