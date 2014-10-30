@@ -1684,4 +1684,48 @@ namespace HCSearch
 
 		return closure;
 	}
+
+	/**************** Stochastic Depth Successor Function ****************/
+
+	StochasticDepthSuccessor::StochasticDepthSuccessor()
+	{
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+
+	StochasticDepthSuccessor::StochasticDepthSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+	StochasticDepthSuccessor::StochasticDepthSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
+	}
+
+	StochasticDepthSuccessor::~StochasticDepthSuccessor()
+	{
+	}
+
+	void StochasticDepthSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getForwardBackwardLabels(candidateLabelsSet, cc);	
+	}
+
+	void StochasticDepthSuccessor::getForwardBackwardLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		// assumes labels are 1, 2, ..., numClasses
+		int label = cc->getLabel();
+		if (label-1 > 0)
+			candidateLabelsSet.insert(label-1);
+		if (label+1 <= Global::settings->CLASSES.numClasses())
+			candidateLabelsSet.insert(label+1);
+	}
 }

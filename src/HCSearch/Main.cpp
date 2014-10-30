@@ -408,6 +408,14 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		successor = new HCSearch::StochasticConstrainedSuccessor(cutEdgesIndependently, po.cutParam, 
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_DEPTH:
+		LOG() << "stochastic depth" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
+		LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
+		successor = new HCSearch::StochasticDepthSuccessor(cutEdgesIndependently, po.cutParam, po.maxCuttingThreshold, po.minCuttingThreshold);
+		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";
 	}

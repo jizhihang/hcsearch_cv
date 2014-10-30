@@ -328,6 +328,26 @@ namespace HCSearch
 		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
 			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes);
 	};
+
+	/*!
+	 * @brief Stochastic depth successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to front or back.
+	 */
+	class StochasticDepthSuccessor : public StochasticSuccessor
+	{
+	public:
+		StochasticDepthSuccessor();
+		StochasticDepthSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticDepthSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
+		~StochasticDepthSuccessor();
+
+	protected:
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		void getForwardBackwardLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
 }
 
 #endif

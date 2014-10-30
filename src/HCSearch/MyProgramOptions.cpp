@@ -379,6 +379,8 @@ namespace MyProgramOptions
 						po.nodeClamp = true;
 						po.edgeClamp = true;
 					}
+					else if (strcmp(argv[i+1], "stochastic-depth") == 0)
+						po.successorsMode = STOCHASTIC_DEPTH;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -822,7 +824,7 @@ namespace MyProgramOptions
 		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
-			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained" << endl;
+			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained|stochastic-depth" << endl;
 		cerr << "\t--temp-path arg\t" << ": temp folder name" << endl;
 		cerr << "\t--use-edge-weights arg\t\t" << ": use edge weights if true (must provide --edges-path)" << endl;
 		cerr << "\t--use-groundtruth-best-cost arg\t\t" << ": use groundtruth for best cost output during training if true" << endl;
