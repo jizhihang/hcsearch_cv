@@ -46,6 +46,18 @@ namespace HCSearch
 
 		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 	};
+
+	/*!
+	 * @brief Depth loss function.
+	 */
+	class DepthLoss : public ILossFunction
+	{
+	public:
+		DepthLoss();
+		~DepthLoss();
+
+		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
+	};
 }
 
 #endif
