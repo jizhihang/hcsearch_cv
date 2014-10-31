@@ -256,6 +256,9 @@ namespace HCSearch
 		void sortNodes(SearchType searchType, SearchNodeList& candidateSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 
+		void sortNodesGroundtruth(SearchType searchType, SearchNodeList& candidateSet, ImgFeatures& X, ImgLabeling* YTruth, SearchSpace* searchSpace, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
+
 		/*!
 		 * @brief Checks if the state is duplicate among the states in the priority queue.
 		 */
