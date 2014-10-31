@@ -88,6 +88,7 @@ namespace MyProgramOptions
 		double pruneRatio;
 		double badPruneRatio;
 		bool useEdgeWeights;
+		bool useGroundtruthBestCost;
 
 		bool nodeClamp;
 		bool edgeClamp;

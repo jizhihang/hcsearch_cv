@@ -415,6 +415,7 @@ namespace HCSearch
 		USE_DAGGER = false;
 		CHECK_FOR_DUPLICATES = false;
 		USE_EDGE_WEIGHTS = false;
+		USE_GROUNDTRUTH_BEST_COST_OUTPUT = false;
 
 		/**************** Experiment Settings ****************/
 
