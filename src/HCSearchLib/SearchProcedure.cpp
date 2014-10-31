@@ -993,21 +993,40 @@ namespace HCSearch
 			SearchNode* state = *it;
 			if (!Global::settings->CHECK_FOR_DUPLICATES || !isDuplicate(state, costSet))
 			{
+				bool discard = true;
+
 				// store to cost set in order to check for duplicates
 				if (Global::settings->CHECK_FOR_DUPLICATES || searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+				{
 					costSet.push_back(state);
+					discard = false;
+				}
 
 				// only return nodes when learning H
 				if (searchType == LEARN_H)
+				{
 					candidateSet.push_back(state);
+					discard = false;
+				}
 
 				// get the best heuristic node
 				if (bestHeuristicNode == NULL || state->getHeuristic() < bestHeuristicNode->getHeuristic())
+				{
 					bestHeuristicNode = state;
+					discard = false;
+				}
 
 				// get the best cost node
 				if (state->getCost() < bestCostNode->getCost())
+				{
 					bestCostNode = state;
+					discard = false;
+				}
+
+				if (discard)
+				{
+					delete state;
+				}
 
 				numOutputs++;
 			}
