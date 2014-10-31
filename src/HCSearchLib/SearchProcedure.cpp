@@ -870,17 +870,6 @@ namespace HCSearch
 				vector< double > worstLosses;
 				sortNodes(searchType, candidateSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
 				trainRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
-
-				// clean up
-				if (!Global::settings->CHECK_FOR_DUPLICATES)
-				{
-					for (vector< SearchNode* >::iterator it = candidateSet.begin(); it != candidateSet.end(); it++)
-					{
-						SearchNode* state = *it;
-						if (state != bestHeuristicNode && state != bestCostNode)
-							delete state;
-					}
-				}
 			}
 
 			/***** done with this search step *****/
@@ -959,13 +948,8 @@ namespace HCSearch
 			//	ImgLabeling YPred = state->getY();
 			//	candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
 			//}
-			if (state != bestHeuristicNode && state != bestCostNode)
-				delete state;
+			delete state;
 		}
-		if (bestHeuristicNode != NULL)
-			delete bestHeuristicNode;
-		if (bestCostNode != NULL)
-			delete bestCostNode;
 		//if (YTruth != NULL)
 		//{
 		//	stringstream ssLosses;
@@ -999,10 +983,6 @@ namespace HCSearch
 			expansionSet = bestHeuristicNode->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
 
 		// reset best heuristic
-		if (bestHeuristicNode != bestCostNode)
-		{
-			delete bestHeuristicNode;
-		}
 		bestHeuristicNode = NULL;
 
 		LOG() << "num expansion=" << expansionSet.size() << endl;
@@ -1032,11 +1012,6 @@ namespace HCSearch
 				// get the best heuristic node
 				if (bestHeuristicNode == NULL || state->getHeuristic() < bestHeuristicNode->getHeuristic())
 				{
-					if (bestHeuristicNode != NULL && bestHeuristicNode != bestCostNode)
-					{
-						delete bestHeuristicNode;
-						bestHeuristicNode = NULL;
-					}
 					bestHeuristicNode = state;
 					discard = false;
 				}
@@ -1044,12 +1019,6 @@ namespace HCSearch
 				// get the best cost node
 				if (state->getCost() < bestCostNode->getCost())
 				{
-					if (bestCostNode != NULL && bestCostNode != bestHeuristicNode)
-					{
-						delete bestCostNode;
-						bestCostNode = NULL;
-					}
-
 					bestCostNode = state;
 					discard = false;
 				}
