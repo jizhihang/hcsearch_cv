@@ -121,13 +121,13 @@ for s = searchTypes
     stat.relativedeptherrors = stat.relativedeptherrors ./ stat.totals;
     
     %% calculate average and standard deviation across folds
-    stat.avgdeptherror = mean(stat.deptherror, 1);
-    stat.mindeptherror = max(stat.deptherror, [], 1);
-    stat.stddeptherror = std(stat.deptherror, 0, 1);
+    stat.avgdeptherror = mean(stat.deptherrors, 1);
+    stat.mindeptherror = max(stat.deptherrors, [], 1);
+    stat.stddeptherror = std(stat.deptherrors, 0, 1);
     
-    stat.avgrelativedeptherror = mean(stat.relativedeptherror, 1);
-    stat.minrelativedeptherror = max(stat.relativedeptherror, [], 1);
-    stat.stdrelativedeptherror = std(stat.relativedeptherror, 0, 1);
+    stat.avgrelativedeptherror = mean(stat.relativedeptherrors, 1);
+    stat.minrelativedeptherror = max(stat.relativedeptherrors, [], 1);
+    stat.stdrelativedeptherror = std(stat.relativedeptherrors, 0, 1);
     
     %% add
     evaluate(searchType) = stat;
