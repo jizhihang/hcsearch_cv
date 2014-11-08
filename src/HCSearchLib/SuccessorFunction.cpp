@@ -1732,5 +1732,10 @@ namespace HCSearch
 			candidateLabelsSet.insert(label-5);
 		if (label+5 <= Global::settings->CLASSES.numClasses())
 			candidateLabelsSet.insert(label+5);
+
+		if (label-10 > 0)
+			candidateLabelsSet.insert(label-10);
+		if (label+10 <= Global::settings->CLASSES.numClasses())
+			candidateLabelsSet.insert(label+10);
 	}
 }
