@@ -5,6 +5,8 @@ HC-Search Structured Prediction Framework for Computer Vision
 
 ## Introduction
 
+**Thank you for your interest in this work. If you are here because of my CVPR 2015 paper, please note that this repository was actually created for a different project at the time. You can take a look at how things were overall designed, but to run your own experiments you will have to extract your own features, design your own functions and possibly implement some other functionality.**
+
 HC-Search is a learning and inference framework for structured prediction. This is an implementation of HC-Search primarily geared toward scene labeling for computer vision, but may be adapted to other computer vision tasks.
 
 The HC-Search framework allows you to define a search space and search procedure to perform structured prediction. HC-Search learns a heuristic function to uncover high quality candidates and a cost function to select the best candidate.
